@@ -140,44 +140,44 @@ The product is an engineering workflow system. AI assists the workflow; it does 
 
 Implement tables for:
 
-- [ ] organizations
-- [ ] users / profiles
-- [ ] repositories
-- [ ] GitHub installations
-- [ ] pull requests
-- [ ] analysis jobs
-- [ ] analysis runs
-- [ ] findings
-- [ ] reviewers / reviewer signals
-- [ ] fixes
-- [ ] validation runs
-- [ ] audit events
-- [ ] webhook events
+- [x] organizations
+- [x] users / profiles
+- [x] repositories
+- [x] GitHub installations
+- [x] pull requests
+- [x] analysis jobs
+- [x] analysis runs
+- [x] findings
+- [x] reviewers / reviewer signals
+- [x] fixes
+- [x] validation runs
+- [x] audit events
+- [x] webhook events
 
 ### Repository metadata
 
 Store:
 
-- [ ] GitHub repository ID
-- [ ] owner
-- [ ] name
-- [ ] default branch
-- [ ] installation reference
-- [ ] timestamps
+- [x] GitHub repository ID
+- [x] owner
+- [x] name
+- [x] default branch
+- [x] installation reference
+- [x] timestamps
 
 ### Pull request metadata
 
 Store:
 
-- [ ] GitHub PR ID
-- [ ] repository ID
-- [ ] title
-- [ ] author
-- [ ] status
-- [ ] risk score
-- [ ] priority score
-- [ ] commit SHA
-- [ ] timestamps
+- [x] GitHub PR ID
+- [x] repository ID
+- [x] title
+- [x] author
+- [x] status
+- [x] risk score
+- [x] priority score
+- [x] commit SHA
+- [x] timestamps
 
 ### Analysis jobs
 
@@ -197,52 +197,52 @@ RUNNING
 FAILED
 ```
 
-- [ ] Persist job status.
-- [ ] Persist retry count.
-- [ ] Persist error metadata.
-- [ ] Persist analysis version.
-- [ ] Persist commit SHA.
-- [ ] Persist timestamps.
-- [ ] Add indexes for queue retrieval.
-- [ ] Add idempotency constraints.
+- [x] Persist job status.
+- [x] Persist retry count.
+- [x] Persist error metadata.
+- [x] Persist analysis version.
+- [x] Persist commit SHA.
+- [x] Persist timestamps.
+- [x] Add indexes for queue retrieval.
+- [x] Add idempotency constraints.
 
 ### Findings
 
 Store:
 
-- [ ] severity
-- [ ] category
-- [ ] title
-- [ ] explanation
-- [ ] file
-- [ ] line range
-- [ ] impact
-- [ ] proposed fix
-- [ ] confidence
-- [ ] source (`deterministic` / `ai`)
-- [ ] validation state
+- [x] severity
+- [x] category
+- [x] title
+- [x] explanation
+- [x] file
+- [x] line range
+- [x] impact
+- [x] proposed fix
+- [x] confidence
+- [x] source (`deterministic` / `ai`)
+- [x] validation state
 
 ### Audit trail
 
 Record:
 
-- [ ] webhook received
-- [ ] job created
-- [ ] analysis started
-- [ ] analysis completed
-- [ ] AI request duration
-- [ ] finding count
-- [ ] risk calculation
-- [ ] fix generation
-- [ ] validation result
-- [ ] API errors
+- [x] webhook received
+- [x] job created
+- [x] analysis started
+- [x] analysis completed
+- [x] AI request duration
+- [x] finding count
+- [x] risk calculation
+- [x] fix generation
+- [x] validation result
+- [x] API errors
 
 ### Acceptance
 
-- [ ] Migrations apply cleanly.
-- [ ] RLS policies are tested.
-- [ ] Common dashboard queries are indexed.
-- [ ] Duplicate webhook delivery cannot create duplicate jobs.
+- [x] Migrations apply cleanly.
+- [x] RLS policies are tested.
+- [x] Common dashboard queries are indexed.
+- [x] Duplicate webhook delivery cannot create duplicate jobs.
 
 ---
 
