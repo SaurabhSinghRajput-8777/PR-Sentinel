@@ -252,50 +252,50 @@ Record:
 
 ### GitHub App
 
-- [ ] Create GitHub App.
-- [ ] Configure homepage URL.
-- [ ] Configure webhook URL.
-- [ ] Configure webhook secret.
-- [ ] Configure minimum repository permissions.
-- [ ] Enable required PR events.
-- [ ] Enable required push events.
-- [ ] Store installation metadata.
+- [x] Create GitHub App.
+- [x] Configure homepage URL.
+- [x] Configure webhook URL.
+- [x] Configure webhook secret.
+- [x] Configure minimum repository permissions.
+- [x] Enable required PR events.
+- [x] Enable required push events.
+- [x] Store installation metadata.
 
 ### Authentication
 
-- [ ] Implement GitHub App authentication.
-- [ ] Generate installation access tokens server-side.
-- [ ] Never expose private key to frontend.
-- [ ] Never expose GitHub credentials in logs.
+- [x] Implement GitHub App authentication.
+- [x] Generate installation access tokens server-side.
+- [x] Never expose private key to frontend.
+- [x] Never expose GitHub credentials in logs.
 
 ### Webhook
 
-- [ ] Implement `/github/webhook`.
-- [ ] Verify webhook signature.
-- [ ] Parse event type.
-- [ ] Validate payload.
-- [ ] Persist delivery identifier.
-- [ ] Implement idempotency.
-- [ ] Ignore unsupported events.
-- [ ] Return quickly.
-- [ ] Create analysis job asynchronously.
+- [x] Implement `/github/webhook`.
+- [x] Verify webhook signature.
+- [x] Parse event type.
+- [x] Validate payload.
+- [x] Persist delivery identifier.
+- [x] Implement idempotency.
+- [x] Ignore unsupported events.
+- [x] Return quickly.
+- [x] Create analysis job asynchronously.
 
 ### PR extraction
 
-- [ ] Retrieve PR metadata.
-- [ ] Retrieve changed files.
-- [ ] Retrieve diff.
-- [ ] Retrieve commit SHA.
-- [ ] Handle GitHub API failures.
-- [ ] Handle pagination.
-- [ ] Handle permission errors.
+- [x] Retrieve PR metadata.
+- [x] Retrieve changed files.
+- [x] Retrieve diff.
+- [x] Retrieve commit SHA.
+- [x] Handle GitHub API failures.
+- [x] Handle pagination.
+- [x] Handle permission errors.
 
 ### Acceptance
 
-- [ ] A test PR triggers the webhook.
-- [ ] Invalid signatures are rejected.
-- [ ] Duplicate deliveries are idempotent.
-- [ ] Webhook does not wait for analysis completion.
+- [x] A test PR triggers the webhook.
+- [x] Invalid signatures are rejected.
+- [x] Duplicate deliveries are idempotent.
+- [x] Webhook does not wait for analysis completion.
 
 ---
 
