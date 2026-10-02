@@ -1,66 +1,70 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Shield, GitPullRequest, Activity, LayoutDashboard } from "lucide-react";
+import { Box, Cpu } from "lucide-react";
 
 export const Header: React.FC = () => {
   const location = useLocation();
 
   const navLinks = [
-    { to: "/", label: "Queue", icon: GitPullRequest },
-    { to: "/command-center", label: "Cockpit", icon: LayoutDashboard },
-    { to: "/live-surface", label: "Live Surface", icon: Activity },
+    { to: "/", label: "PULL REQUESTS" },
+    { to: "/command-center", label: "ANALYTICS" },
+    { to: "/about", label: "ABOUT" },
   ];
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[#262626] bg-[#080808]/90 backdrop-blur-md">
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
-        <div className="flex items-center space-x-6">
-          <Link to="/" className="flex items-center space-x-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-[#d8ff3e] text-black">
-              <Shield className="h-5 w-5 stroke-[2.2]" />
-            </div>
-            <div className="flex flex-col">
-              <span className="font-mono text-sm font-bold tracking-tight text-[#f5f5f0]">
+    <header className="sticky top-0 z-50 border-b border-[#d4d0c7] bg-[#efece6] backdrop-blur-sm">
+      <div className="w-full flex h-14 items-stretch justify-between">
+        {/* Left side: Brand + Space + Nav Links */}
+        <div className="flex items-stretch">
+          {/* Brand / Logo section with vertical divider */}
+          <div className="flex items-center px-6 sm:px-8 border-r border-[#d4d0c7]">
+            <Link to="/" className="group flex items-center space-x-3.5">
+              {/* Isometric 3D wireframe cube icon */}
+              <div className="flex items-center justify-center text-[#111111] transition-transform group-hover:scale-105">
+                <Box className="h-5 w-5 stroke-[1.8]" />
+              </div>
+              <span className="font-display text-sm font-bold tracking-tight text-[#111111] uppercase">
                 PR SENTINEL
               </span>
-              <span className="text-[10px] font-mono text-[#686863] -mt-1 tracking-wider uppercase">
-                Risk Engine v1.0
-              </span>
-            </div>
-          </Link>
+            </Link>
+          </div>
 
-          <nav className="hidden md:flex items-center space-x-1 pl-4 border-l border-[#262626]">
+          {/* Architectural spacing cell between product name and nav items */}
+          <div className="w-8 sm:w-16 border-r border-[#d4d0c7] bg-[#f2efe9]/40" />
+
+          {/* Nav tabs with vertical border cells and red active indicator */}
+          <nav className="flex items-stretch divide-x divide-[#d4d0c7] border-r border-[#d4d0c7]">
             {navLinks.map((link) => {
-              const Icon = link.icon;
               const isActive = location.pathname === link.to;
               return (
                 <Link
                   key={link.to}
                   to={link.to}
-                  className={`flex items-center space-x-2 px-3 py-1.5 text-xs font-medium rounded transition-colors ${
+                  className={`relative flex items-center px-6 sm:px-8 text-xs font-mono tracking-wider transition-colors select-none ${
                     isActive
-                      ? "bg-[#181818] text-[#d8ff3e]"
-                      : "text-[#a5a5a0] hover:text-[#f5f5f0] hover:bg-[#121212]"
+                      ? "text-[#e63920] font-bold bg-[#efece6]"
+                      : "text-[#111111] hover:text-[#e63920] hover:bg-[#e9e6df]"
                   }`}
                 >
-                  <Icon className="h-3.5 w-3.5" />
                   <span>{link.label}</span>
+                  {/* Active red underline indicator */}
+                  {isActive && (
+                    <div className="absolute bottom-0 left-6 right-6 h-[2px] bg-[#e63920]" />
+                  )}
                 </Link>
               );
             })}
           </nav>
         </div>
 
-        <div className="flex items-center space-x-3">
-          <div className="hidden sm:flex items-center space-x-2 px-2.5 py-1 rounded bg-[#121212] border border-[#262626] text-xs font-mono text-[#a5a5a0]">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#10b981] animate-pulse"></span>
-            <span>WORKER: ACTIVE</span>
-          </div>
-
-          <div className="flex items-center space-x-2 text-xs font-mono text-[#a5a5a0]">
-            <span className="px-2 py-0.5 rounded bg-[#181818] border border-[#262626] text-[#d8ff3e]">
-              FREE TIER
-            </span>
+        {/* Rightmost: Engine status and Gemini version cell with left vertical divider */}
+        <div className="hidden sm:flex items-center px-6 sm:px-8 border-l border-[#d4d0c7]">
+          <div className="flex items-center space-x-2.5 text-xs font-mono">
+            <Cpu className="h-3.5 w-3.5 text-[#e63920]" />
+            <span className="text-[#666660] font-medium uppercase tracking-wider">ENGINE:</span>
+            <span className="text-[#107040] font-bold">ONLINE</span>
+            <span className="text-[#b5b0a4]">·</span>
+            <span className="text-[#111111] font-semibold">GEMINI 1.5 FLASH</span>
           </div>
         </div>
       </div>

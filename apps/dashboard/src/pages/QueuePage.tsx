@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { 
   ArrowUpRight, 
   GitBranch, 
   Sparkles,
-  Layers
+  Layers,
+  Search,
+  ChevronRight
 } from "lucide-react";
 import type { PullRequest } from "../types";
 import { formatRelativeTime } from "../lib/utils";
@@ -93,151 +95,261 @@ const MOCK_PULL_REQUESTS: PullRequest[] = [
 ];
 
 export const QueuePage: React.FC = () => {
+  const [filterSeverity, setFilterSeverity] = useState<string>("ALL");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+
+  const filteredPRs = MOCK_PULL_REQUESTS.filter(pr => {
+    if (filterSeverity !== "ALL" && pr.risk_level !== filterSeverity) return false;
+    if (searchQuery.trim() !== "") {
+      const q = searchQuery.toLowerCase();
+      return (
+        pr.title.toLowerCase().includes(q) ||
+        pr.author_login.toLowerCase().includes(q) ||
+        pr.number.toString().includes(q)
+      );
+    }
+    return true;
+  });
+
   return (
-    <div className="min-h-screen bg-[#080808] text-[#f5f5f0] pb-24">
-      {/* Top Banner / Editorial Tagline */}
-      <section className="border-b border-[#262626] bg-[#0d0d0d] px-4 py-8 sm:px-6">
-        <div className="mx-auto max-w-7xl">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div>
-              <div className="flex items-center space-x-2 text-xs font-mono text-[#d8ff3e] uppercase tracking-wider mb-2">
-                <span className="inline-block h-2 w-2 rounded-full bg-[#d8ff3e] animate-ping" />
-                <span>Engineering Queue Triage</span>
+    <div className="min-h-screen bg-[#efece6] text-[#111111] pb-24 selection:bg-[#e63920] selection:text-white">
+      {/* Editorial Architectural Hero Statement Banner */}
+      <section className="relative border-b border-[#d4d0c7] bg-[#efece6] bg-grid-pattern px-6 sm:px-12 lg:px-20 xl:px-28 py-12 lg:py-16 min-h-[340px] flex items-center overflow-hidden">
+        {/* Constructivist Accent Geometry in Background */}
+        <div className="absolute right-12 top-6 w-36 h-36 rounded-full bg-[#e63920] opacity-90 hidden lg:block pointer-events-none" />
+        <div className="absolute right-36 top-16 w-24 h-24 bg-[#111111] opacity-90 hidden lg:block pointer-events-none" />
+
+        <div className="w-full relative z-10">
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+            <div className="max-w-3xl">
+              <div className="inline-flex items-center space-x-2 px-2.5 py-1 bg-[#111111] text-[11px] font-mono text-[#f7f5f0] uppercase tracking-wider mb-5">
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#e63920] animate-pulse" />
+                <span>TRIAGE RECONNAISSANCE // HUMAN-IN-THE-LOOP</span>
               </div>
-              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#f5f5f0]">
-                Don’t review every PR. <br className="hidden sm:inline" />
-                <span className="text-[#a5a5a0]">Review the PRs that matter.</span>
+              
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-extrabold tracking-tight text-[#111111] leading-[1.05] uppercase">
+                <div>ENGINEERING RISK,</div>
+                <div className="text-[#666660] font-normal">BEFORE IT BECOMES INCIDENT.</div>
               </h1>
+              
+              <p className="mt-5 text-sm sm:text-base text-[#444440] max-w-2xl leading-relaxed font-sans">
+                PR Sentinel continuously decomposes pull requests into AST blast radii, computes deterministic risk scores, synthesizes isolated validation sandboxes, and orchestrates domain-expert review routing.
+              </p>
             </div>
 
-            {/* Quick Metrics */}
-            <div className="grid grid-cols-3 gap-3 border-t sm:border-t-0 sm:border-l border-[#262626] sm:pl-8 pt-4 sm:pt-0">
-              <div className="flex flex-col">
-                <span className="text-xs font-mono text-[#686863]">CRITICAL PRs</span>
-                <span className="text-2xl font-mono font-bold text-[#ff4d4d]">1</span>
+            {/* Asymmetrical Editorial Metric Blocks - Architectural Drafting Grid */}
+            <div className="flex flex-wrap sm:flex-nowrap gap-0 bg-[#d4d0c7] p-px border border-[#111111] shadow-sm">
+              <div className="flex flex-col bg-[#f7f5f0] px-6 py-5 min-w-[130px] border-r border-[#d4d0c7]">
+                <span className="text-[11px] font-mono tracking-wider uppercase text-[#666660]">
+                  MAX RISK
+                </span>
+                <span className="text-3xl font-mono font-extrabold text-[#e63920] tracking-tight mt-1">
+                  84<span className="text-xs font-normal text-[#666660]">/100</span>
+                </span>
+                <span className="text-[10px] font-mono text-[#e63920] mt-1 uppercase font-bold">
+                  ● Critical Blast
+                </span>
               </div>
-              <div className="flex flex-col">
-                <span className="text-xs font-mono text-[#686863]">AVG RISK</span>
-                <span className="text-2xl font-mono font-bold text-[#d8ff3e]">54.6</span>
+
+              <div className="flex flex-col bg-[#f7f5f0] px-6 py-5 min-w-[130px] border-r border-[#d4d0c7]">
+                <span className="text-[11px] font-mono tracking-wider uppercase text-[#666660]">
+                  ANALYSIS SLA
+                </span>
+                <span className="text-3xl font-mono font-extrabold text-[#111111] tracking-tight mt-1">
+                  24<span className="text-xs font-normal text-[#666660]">s</span>
+                </span>
+                <span className="text-[10px] font-mono text-[#666660] mt-1 uppercase">
+                  Ephemeral Runner
+                </span>
               </div>
-              <div className="flex flex-col">
-                <span className="text-xs font-mono text-[#686863]">FIXES PROPOSED</span>
-                <span className="text-2xl font-mono font-bold text-[#38bdf8]">2</span>
+
+              <div className="flex flex-col bg-[#f7f5f0] px-6 py-5 min-w-[130px]">
+                <span className="text-[11px] font-mono tracking-wider uppercase text-[#666660]">
+                  AUTO-PATCHES
+                </span>
+                <span className="text-3xl font-mono font-extrabold text-[#111111] tracking-tight mt-1">
+                  2<span className="text-xs font-normal text-[#e63920] font-bold"> READY</span>
+                </span>
+                <span className="text-[10px] font-mono text-[#e63920] mt-1 uppercase font-semibold">
+                  Sandbox Tested
+                </span>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Main PR Risk Surface Queue */}
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-        <div className="flex items-center justify-between mb-6">
+      {/* Main Operational Queue Control Bar */}
+      <main className="w-full px-6 sm:px-12 lg:px-20 xl:px-28 py-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#d4d0c7] mb-6">
           <div className="flex items-center space-x-3">
-            <Layers className="h-4 w-4 text-[#d8ff3e]" />
-            <h2 className="text-sm font-mono uppercase tracking-wider text-[#a5a5a0]">
-              Active Pull Request Risk Surfaces ({MOCK_PULL_REQUESTS.length})
-            </h2>
+            <div className="p-1.5 bg-[#111111] text-white">
+              <Layers className="h-4 w-4" />
+            </div>
+            <div>
+              <h2 className="text-sm font-display font-bold uppercase tracking-wider text-[#111111]">
+                Active Triage Queue
+              </h2>
+              <p className="text-xs font-mono text-[#666660]">
+                {filteredPRs.length} PRs prioritised by risk surface blast radius
+              </p>
+            </div>
           </div>
-          <div className="text-xs font-mono text-[#686863]">
-            Sorted by Deterministic Priority Score
+
+          {/* Search & Severity Filters */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative">
+              <Search className="h-3.5 w-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#888880]" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Filter by title, author, #..."
+                className="pl-8 pr-3 py-1.5 bg-[#f7f5f0] border border-[#d4d0c7] text-xs font-mono text-[#111111] placeholder-[#888880] focus:outline-none focus:border-[#111111] w-48 sm:w-64 transition-colors"
+              />
+            </div>
+
+            <div className="flex items-center border border-[#d4d0c7] bg-[#f7f5f0] text-xs font-mono">
+              {["ALL", "CRITICAL", "HIGH", "LOW"].map((level) => (
+                <button
+                  key={level}
+                  onClick={() => setFilterSeverity(level)}
+                  className={`px-3 py-1.5 transition-colors ${
+                    filterSeverity === level
+                      ? "bg-[#111111] text-[#f7f5f0] font-bold"
+                      : "text-[#666660] hover:text-[#111111] hover:bg-[#e8e5df]"
+                  }`}
+                >
+                  {level}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
+        {/* PR Queue Cards */}
         <div className="space-y-4">
-          {MOCK_PULL_REQUESTS.map((pr) => {
+          {filteredPRs.map((pr) => {
             const isCritical = pr.risk_level === "CRITICAL";
             const isHigh = pr.risk_level === "HIGH";
 
             return (
               <div
                 key={pr.id}
-                className="group relative rounded-sm border border-[#262626] bg-[#121212] p-5 transition-all hover:border-[#383838] hover:bg-[#151515]"
+                className="group relative border border-[#d4d0c7] bg-[#f7f5f0] p-6 transition-all duration-200 hover:border-[#111111] hover:shadow-sm"
               >
-                <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
-                  {/* Left: PR Details */}
+                {/* Left accent indicator bar */}
+                <div 
+                  className={`absolute left-0 top-0 bottom-0 w-1.5 ${
+                    isCritical 
+                      ? "bg-[#e63920]" 
+                      : isHigh 
+                      ? "bg-[#f97316]" 
+                      : "bg-[#107040]"
+                  }`}
+                />
+
+                <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6 pl-2">
+                  {/* Left: PR Hierarchy & Signals */}
                   <div className="flex-1 space-y-3">
-                    <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
-                      <span className="font-bold text-[#d8ff3e]">#{pr.number}</span>
-                      <span className="text-[#686863]">·</span>
-                      <span className="text-[#a5a5a0]">by @{pr.author_login}</span>
-                      <span className="text-[#686863]">·</span>
-                      <span className="flex items-center text-[#686863]">
-                        <GitBranch className="h-3 w-3 mr-1" />
+                    <div className="flex flex-wrap items-center gap-2.5 text-xs font-mono">
+                      <span className="font-bold text-[#e63920] bg-[#efece6] border border-[#d4d0c7] px-2 py-0.5">
+                        PR #{pr.number}
+                      </span>
+                      <span className="text-[#b5b0a4]">·</span>
+                      <span className="text-[#555550]">by @{pr.author_login}</span>
+                      <span className="text-[#b5b0a4]">·</span>
+                      <span className="flex items-center text-[#555550]">
+                        <GitBranch className="h-3 w-3 mr-1 text-[#111111]" />
                         {pr.head_branch}
                       </span>
-                      <span className="text-[#686863]">·</span>
-                      <span className="text-[#686863]">{formatRelativeTime(pr.github_updated_at)}</span>
+                      <span className="text-[#b5b0a4]">·</span>
+                      <span className="text-[#777770]">{formatRelativeTime(pr.github_updated_at)}</span>
                     </div>
 
                     <Link
                       to={`/pr/${pr.number}`}
-                      className="inline-flex items-center space-x-1.5 text-base font-semibold text-[#f5f5f0] group-hover:text-[#d8ff3e] transition-colors"
+                      className="group/link inline-flex items-center space-x-2 text-lg font-display font-bold text-[#111111] hover:text-[#e63920] transition-colors"
                     >
-                      <span>{pr.title}</span>
-                      <ArrowUpRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <span className="tracking-tight">{pr.title}</span>
+                      <ArrowUpRight className="h-4 w-4 text-[#888880] group-hover/link:text-[#e63920] transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
                     </Link>
 
-                    {/* AI Brief Extract if exists */}
+                    {/* AI Brief Insight Box - Architectural Panel */}
                     {pr.review_brief && (
-                      <div className="rounded border border-[#262626] bg-[#0a0a0a] p-3 text-xs">
-                        <div className="flex items-center space-x-1.5 text-[#38bdf8] font-mono text-[11px] mb-1">
-                          <Sparkles className="h-3 w-3" />
-                          <span>AI REVIEW BRIEF FOCUS</span>
+                      <div className="border border-[#d4d0c7] bg-[#efece6] p-3.5 text-xs">
+                        <div className="flex items-center space-x-2 text-[#111111] font-mono text-[11px] mb-1 font-bold uppercase tracking-wider">
+                          <Sparkles className="h-3 w-3 text-[#e63920]" />
+                          <span>SYNTHESIZED REVIEW BRIEF</span>
                         </div>
-                        <p className="text-[#a5a5a0] line-clamp-2">
+                        <p className="text-[#444440] leading-relaxed font-sans">
                           {pr.review_brief.summary}
                         </p>
+                        {pr.review_brief.key_risks && (
+                          <div className="mt-2.5 flex flex-wrap gap-2">
+                            {pr.review_brief.key_risks.slice(0, 2).map((risk, idx) => (
+                              <span
+                                key={idx}
+                                className="inline-flex items-center text-[10px] font-mono text-[#e63920] bg-[#f7f5f0] border border-[#d4d0c7] px-2 py-0.5 font-medium"
+                              >
+                                ⚠ {risk}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )}
 
-                    {/* Stats & Meta */}
-                    <div className="flex items-center space-x-4 text-xs font-mono text-[#686863]">
-                      <span>+{pr.additions} / -{pr.deletions}</span>
+                    {/* Code Change Metrics */}
+                    <div className="flex flex-wrap items-center gap-4 text-xs font-mono text-[#666660] pt-1">
+                      <span className="text-[#107040] font-semibold">+{pr.additions} lines</span>
+                      <span className="text-[#e63920] font-semibold">-{pr.deletions} lines</span>
                       <span>{pr.changed_files_count} files changed</span>
-                      <span className="text-[#a5a5a0]">SHA: {pr.head_commit_sha}</span>
+                      <span className="text-[#111111] font-mono">HEAD: {pr.head_commit_sha}</span>
                     </div>
                   </div>
 
-                  {/* Right: Risk Cockpit Score */}
-                  <div className="flex lg:flex-col items-center lg:items-end justify-between border-t lg:border-t-0 border-[#262626] pt-3 lg:pt-0">
+                  {/* Right: Risk Surface Score & Action Button */}
+                  <div className="flex lg:flex-col items-center lg:items-end justify-between border-t lg:border-t-0 border-[#d4d0c7] pt-4 lg:pt-0 min-w-[170px]">
                     <div className="flex flex-col lg:items-end">
-                      <span className="text-[10px] font-mono tracking-wider uppercase text-[#686863]">
-                        RISK SCORE
+                      <span className="text-[10px] font-mono tracking-widest uppercase text-[#666660] font-semibold">
+                        RISK METRIC
                       </span>
-                      <div className="flex items-baseline space-x-1">
+                      <div className="flex items-baseline space-x-1.5 mt-0.5">
                         <span
-                          className={`text-3xl font-mono font-bold ${
+                          className={`text-4xl font-mono font-extrabold tracking-tight ${
                             isCritical
-                              ? "text-[#ff4d4d]"
+                              ? "text-[#e63920]"
                               : isHigh
                               ? "text-[#f97316]"
-                              : "text-[#38bdf8]"
+                              : "text-[#107040]"
                           }`}
                         >
                           {pr.risk_score}
                         </span>
-                        <span className="text-xs font-mono text-[#686863]">/100</span>
+                        <span className="text-xs font-mono text-[#888880]">/100</span>
                       </div>
                     </div>
 
-                    <div className="mt-2 flex items-center space-x-2">
+                    <div className="mt-3 flex items-center space-x-2">
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold tracking-wider uppercase ${
+                        className={`inline-flex items-center px-2 py-0.5 text-[10px] font-mono font-bold tracking-wider uppercase border ${
                           isCritical
-                            ? "bg-red-500/10 text-red-400 border border-red-500/30"
+                            ? "bg-[#e63920] text-white border-[#e63920]"
                             : isHigh
-                            ? "bg-orange-500/10 text-orange-400 border border-orange-500/30"
-                            : "bg-sky-500/10 text-sky-400 border border-sky-500/30"
+                            ? "bg-[#f97316] text-white border-[#f97316]"
+                            : "bg-[#107040] text-white border-[#107040]"
                         }`}
                       >
-                        {pr.risk_level} RISK
+                        {pr.risk_level}
                       </span>
 
                       <Link
                         to={`/pr/${pr.number}`}
-                        className="px-3 py-1 bg-[#181818] hover:bg-[#202020] text-xs font-mono text-[#f5f5f0] border border-[#262626] rounded transition-colors"
+                        className="inline-flex items-center space-x-1 px-3 py-1.5 bg-[#111111] hover:bg-[#e63920] text-xs font-mono text-[#f7f5f0] hover:text-white border border-[#111111] transition-all duration-150"
                       >
-                        Inspect →
+                        <span>Inspect</span>
+                        <ChevronRight className="h-3 w-3" />
                       </Link>
                     </div>
                   </div>

@@ -20,80 +20,92 @@ export const RiskSurfaceGraph: React.FC<RiskGraphProps> = ({ prNumber }) => {
     () => [
       {
         id: "pr",
-        position: { x: 50, y: 150 },
-        data: { label: `PR #${prNumber} (Risk: 84)` },
+        position: { x: 50, y: 140 },
+        data: { label: `PR #${prNumber} · RISK: 84 [CRITICAL]` },
         sourcePosition: Position.Right,
         style: {
-          background: "#181818",
-          color: "#d8ff3e",
-          border: "1px solid #d8ff3e",
-          borderRadius: "4px",
+          background: "#111111",
+          color: "#f7f5f0",
+          border: "2px solid #e63920",
+          borderRadius: "0px",
           fontFamily: "JetBrains Mono, monospace",
           fontSize: "12px",
-          padding: "10px",
-          fontWeight: "bold",
+          padding: "10px 14px",
+          fontWeight: 700,
+          boxShadow: "0 2px 10px rgba(0,0,0,0.15)",
         },
       },
       {
         id: "auth-session",
-        position: { x: 300, y: 60 },
-        data: { label: "src/auth/session.ts [CRITICAL]" },
+        position: { x: 340, y: 50 },
+        data: { label: "src/auth/session.ts\n⚠ UNBOUNDED RETRY LOOP" },
         targetPosition: Position.Left,
         sourcePosition: Position.Right,
         style: {
-          background: "#1e1010",
-          color: "#ff6b6b",
-          border: "1px solid #ff4d4d",
-          borderRadius: "4px",
+          background: "#f7f5f0",
+          color: "#c02810",
+          border: "2px solid #e63920",
+          borderRadius: "0px",
           fontFamily: "JetBrains Mono, monospace",
           fontSize: "11px",
-          padding: "8px",
+          fontWeight: 600,
+          padding: "10px 12px",
+          whiteSpace: "pre-line",
+          lineHeight: 1.4,
+          boxShadow: "0 2px 8px rgba(230, 57, 32, 0.15)",
         },
       },
       {
         id: "auth-jwt",
-        position: { x: 300, y: 240 },
-        data: { label: "src/auth/jwt.ts [HIGH]" },
+        position: { x: 340, y: 230 },
+        data: { label: "src/auth/jwt.ts\n⚡ WEAK SECRET FALLBACK" },
         targetPosition: Position.Left,
         sourcePosition: Position.Right,
         style: {
-          background: "#1e160e",
-          color: "#ffa94d",
-          border: "1px solid #f97316",
-          borderRadius: "4px",
+          background: "#f7f5f0",
+          color: "#c2410c",
+          border: "1.5px solid #f97316",
+          borderRadius: "0px",
           fontFamily: "JetBrains Mono, monospace",
           fontSize: "11px",
-          padding: "8px",
+          fontWeight: 600,
+          padding: "10px 12px",
+          whiteSpace: "pre-line",
+          lineHeight: 1.4,
         },
       },
       {
         id: "redis-pool",
-        position: { x: 580, y: 60 },
-        data: { label: "redis.pool.reconnect() [BLAST RADIUS]" },
+        position: { x: 640, y: 50 },
+        data: { label: "redis.pool.reconnect()\nBLAST: HTTP 504 TIMEOUT" },
         targetPosition: Position.Left,
         style: {
-          background: "#141414",
-          color: "#a5a5a0",
-          border: "1px dashed #686863",
-          borderRadius: "4px",
+          background: "#efece6",
+          color: "#555550",
+          border: "1px dashed #e63920",
+          borderRadius: "0px",
           fontFamily: "JetBrains Mono, monospace",
           fontSize: "11px",
-          padding: "8px",
+          padding: "10px 12px",
+          whiteSpace: "pre-line",
+          lineHeight: 1.4,
         },
       },
       {
         id: "middleware",
-        position: { x: 580, y: 240 },
-        data: { label: "src/middleware/guard.ts [DEPENDENT]" },
+        position: { x: 640, y: 230 },
+        data: { label: "src/middleware/guard.ts\nDEPENDENCY: ROUTE PROTECT" },
         targetPosition: Position.Left,
         style: {
-          background: "#141414",
-          color: "#a5a5a0",
-          border: "1px solid #383838",
-          borderRadius: "4px",
+          background: "#efece6",
+          color: "#555550",
+          border: "1px solid #d4d0c7",
+          borderRadius: "0px",
           fontFamily: "JetBrains Mono, monospace",
           fontSize: "11px",
-          padding: "8px",
+          padding: "10px 12px",
+          whiteSpace: "pre-line",
+          lineHeight: 1.4,
         },
       },
     ],
@@ -107,8 +119,8 @@ export const RiskSurfaceGraph: React.FC<RiskGraphProps> = ({ prNumber }) => {
         source: "pr",
         target: "auth-session",
         animated: true,
-        style: { stroke: "#ff4d4d", strokeWidth: 2 },
-        markerEnd: { type: MarkerType.ArrowClosed, color: "#ff4d4d" },
+        style: { stroke: "#e63920", strokeWidth: 2 },
+        markerEnd: { type: MarkerType.ArrowClosed, color: "#e63920" },
       },
       {
         id: "e-pr-jwt",
@@ -121,29 +133,29 @@ export const RiskSurfaceGraph: React.FC<RiskGraphProps> = ({ prNumber }) => {
         id: "e-session-redis",
         source: "auth-session",
         target: "redis-pool",
-        style: { stroke: "#686863", strokeDasharray: "4 4" },
-        markerEnd: { type: MarkerType.ArrowClosed, color: "#686863" },
+        style: { stroke: "#e63920", strokeDasharray: "4 4" },
+        markerEnd: { type: MarkerType.ArrowClosed, color: "#e63920" },
       },
       {
         id: "e-jwt-middleware",
         source: "auth-jwt",
         target: "middleware",
-        style: { stroke: "#383838" },
-        markerEnd: { type: MarkerType.ArrowClosed, color: "#383838" },
+        style: { stroke: "#888880" },
+        markerEnd: { type: MarkerType.ArrowClosed, color: "#888880" },
       },
     ],
     []
   );
 
   return (
-    <div className="h-[360px] w-full rounded border border-[#262626] bg-[#0c0c0c] overflow-hidden">
+    <div className="h-[360px] w-full border border-[#d4d0c7] bg-[#f7f5f0] overflow-hidden">
       <ReactFlow nodes={nodes} edges={edges} fitView>
-        <Background color="#1f1f1f" gap={16} size={1} />
-        <Controls className="bg-[#181818] border border-[#262626] fill-[#f5f5f0]" />
+        <Background color="#d4d0c7" gap={20} size={1} />
+        <Controls className="bg-[#f7f5f0] border border-[#d4d0c7] fill-[#111111]" />
         <MiniMap
-          nodeColor={(n) => (n.id === "pr" ? "#d8ff3e" : n.id.includes("session") ? "#ff4d4d" : "#444")}
-          maskColor="rgba(8, 8, 8, 0.8)"
-          className="bg-[#121212] border border-[#262626]"
+          nodeColor={(n) => (n.id === "pr" ? "#e63920" : n.id.includes("session") ? "#e63920" : "#d4d0c7")}
+          maskColor="rgba(239, 236, 230, 0.75)"
+          className="bg-[#f7f5f0] border border-[#d4d0c7]"
         />
       </ReactFlow>
     </div>
