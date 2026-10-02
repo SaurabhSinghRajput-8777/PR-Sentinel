@@ -344,13 +344,13 @@ Create:
 
 ### Diff extraction
 
-- [ ] Parse changed files.
-- [ ] Identify added lines.
-- [ ] Identify removed lines.
-- [ ] Identify surrounding context.
-- [ ] Normalize file paths.
-- [ ] Record language.
-- [ ] Record affected modules.
+- [x] Parse changed files.
+- [x] Identify added lines.
+- [x] Identify removed lines.
+- [x] Identify surrounding context.
+- [x] Normalize file paths.
+- [x] Record language.
+- [x] Record affected modules.
 
 ### Context construction
 
@@ -365,18 +365,18 @@ Context priority:
 6. Historical context
 ```
 
-- [ ] Bound context size.
-- [ ] Do not send complete repository blindly.
-- [ ] Remove unnecessary secrets.
-- [ ] Mark repository content as untrusted data.
-- [ ] Separate system instructions from repository data.
+- [x] Bound context size.
+- [x] Do not send complete repository blindly.
+- [x] Remove unnecessary secrets.
+- [x] Mark repository content as untrusted data.
+- [x] Separate system instructions from repository data.
 
 ### Acceptance
 
-- [ ] Context is deterministic for the same commit.
-- [ ] Oversized context is bounded.
-- [ ] Secret-like content is excluded where appropriate.
-- [ ] Context builder has unit tests.
+- [x] Context is deterministic for the same commit.
+- [x] Oversized context is bounded.
+- [x] Secret-like content is excluded where appropriate.
+- [x] Context builder has unit tests.
 
 ---
 
@@ -388,47 +388,47 @@ Context priority:
 
 Initial supported languages:
 
-- [ ] Python
-- [ ] JavaScript
-- [ ] TypeScript
-- [ ] Java
-- [ ] C++
-- [ ] Go
+- [x] Python
+- [x] JavaScript
+- [x] TypeScript
+- [x] Java
+- [x] C++
+- [x] Go
 
 Implement:
 
-- [ ] syntax parsing
-- [ ] changed-function extraction
-- [ ] changed-class extraction
-- [ ] dependency/reference extraction
-- [ ] AST metadata
+- [x] syntax parsing
+- [x] changed-function extraction
+- [x] changed-class extraction
+- [x] dependency/reference extraction
+- [x] AST metadata
 
 ### Semgrep
 
 Implement rules/categories for:
 
-- [ ] SQL injection
-- [ ] command injection
-- [ ] XSS
-- [ ] hardcoded secrets
-- [ ] authentication bypass
-- [ ] authorization weaknesses
-- [ ] unsafe deserialization
-- [ ] insecure file operations
-- [ ] sensitive data exposure
+- [x] SQL injection
+- [x] command injection
+- [x] XSS
+- [x] hardcoded secrets
+- [x] authentication bypass
+- [x] authorization weaknesses
+- [x] unsafe deserialization
+- [x] insecure file operations
+- [x] sensitive data exposure
 
 ### Linters
 
-- [ ] Detect available project linters.
-- [ ] Run appropriate language tooling.
-- [ ] Normalize output into finding schema.
+- [x] Detect available project linters.
+- [x] Run appropriate language tooling.
+- [x] Normalize output into finding schema.
 
 ### Acceptance
 
-- [ ] Static analyzers produce normalized findings.
-- [ ] Finding locations are accurate.
-- [ ] False parser failures do not crash the complete analysis.
-- [ ] Unit tests cover security rules.
+- [x] Static analyzers produce normalized findings.
+- [x] Finding locations are accurate.
+- [x] False parser failures do not crash the complete analysis.
+- [x] Unit tests cover security rules.
 
 ---
 
@@ -447,22 +447,22 @@ AIProvider
 └── generateFix()
 ```
 
-- [ ] Implement provider interface.
-- [ ] Implement hosted provider adapter.
-- [ ] Implement local Ollama adapter where practical.
-- [ ] Make provider replaceable.
-- [ ] Keep provider-specific logic isolated.
+- [x] Implement provider interface.
+- [x] Implement hosted provider adapter.
+- [x] Implement local Ollama adapter where practical.
+- [x] Make provider replaceable.
+- [x] Keep provider-specific logic isolated.
 
 ### Prompt construction
 
-- [ ] Provide bounded context.
-- [ ] Include diff.
-- [ ] Include relevant code.
-- [ ] Include deterministic findings.
-- [ ] Include repository metadata only when needed.
-- [ ] Explicitly label repository content as untrusted.
-- [ ] Never grant unrestricted tool access.
-- [ ] Never unnecessarily include secrets.
+- [x] Provide bounded context.
+- [x] Include diff.
+- [x] Include relevant code.
+- [x] Include deterministic findings.
+- [x] Include repository metadata only when needed.
+- [x] Explicitly label repository content as untrusted.
+- [x] Never grant unrestricted tool access.
+- [x] Never unnecessarily include secrets.
 
 ### Structured output
 
@@ -470,13 +470,13 @@ AI must return validated structured data.
 
 Implement:
 
-- [ ] JSON schema.
-- [ ] runtime validation.
-- [ ] invalid JSON handling.
-- [ ] malformed finding handling.
-- [ ] bounded retries.
-- [ ] timeout handling.
-- [ ] rate-limit handling.
+- [x] JSON schema.
+- [x] runtime validation.
+- [x] invalid JSON handling.
+- [x] malformed finding handling.
+- [x] bounded retries.
+- [x] timeout handling.
+- [x] rate-limit handling.
 
 ### Finding explanation
 
@@ -492,18 +492,18 @@ Fix?
 
 ### AI failure fallback
 
-- [ ] Preserve deterministic analysis.
-- [ ] Mark AI analysis unavailable.
-- [ ] Show reason.
-- [ ] Offer retry.
-- [ ] Do not invalidate the underlying PR.
+- [x] Preserve deterministic analysis.
+- [x] Mark AI analysis unavailable.
+- [x] Show reason.
+- [x] Offer retry.
+- [x] Do not invalidate the underlying PR.
 
 ### Acceptance
 
-- [ ] AI output is schema-valid.
-- [ ] Prompt size is bounded.
-- [ ] AI failure is recoverable.
-- [ ] Deterministic results remain available.
+- [x] AI output is schema-valid.
+- [x] Prompt size is bounded.
+- [x] AI failure is recoverable.
+- [x] Deterministic results remain available.
 
 ---
 
@@ -526,20 +526,20 @@ RiskScore =
 
 Tasks:
 
-- [ ] Define normalized input ranges.
-- [ ] Implement deterministic calculation.
-- [ ] Persist component scores.
-- [ ] Persist final risk score.
-- [ ] Implement risk bands.
-- [ ] Implement priority score.
-- [ ] Explain score composition in UI.
-- [ ] Unit test formula and boundaries.
+- [x] Define normalized input ranges.
+- [x] Implement deterministic calculation.
+- [x] Persist component scores.
+- [x] Persist final risk score.
+- [x] Implement risk bands.
+- [x] Implement priority score.
+- [x] Explain score composition in UI.
+- [x] Unit test formula and boundaries.
 
 ### Acceptance
 
-- [ ] Same input always produces same score.
-- [ ] AI confidence cannot silently override deterministic risk.
-- [ ] Score can be reproduced from stored inputs.
+- [x] Same input always produces same score.
+- [x] AI confidence cannot silently override deterministic risk.
+- [x] Score can be reproduced from stored inputs.
 
 ---
 
@@ -547,16 +547,16 @@ Tasks:
 
 ## P0
 
-- [ ] Build PR review queue API.
-- [ ] Sort/filter by risk.
-- [ ] Filter by severity.
-- [ ] Filter by repository.
-- [ ] Filter by status.
-- [ ] Paginate results.
-- [ ] Show analysis state.
-- [ ] Show finding counts.
-- [ ] Show risk score.
-- [ ] Show last analysis time.
+- [x] Build PR review queue API.
+- [x] Sort/filter by risk.
+- [x] Filter by severity.
+- [x] Filter by repository.
+- [x] Filter by status.
+- [x] Paginate results.
+- [x] Show analysis state.
+- [x] Show finding counts.
+- [x] Show risk score.
+- [x] Show last analysis time.
 
 ### Acceptance
 
@@ -579,13 +579,13 @@ without opening multiple screens.
 
 Evidence signals:
 
-- [ ] file expertise
-- [ ] recent activity
-- [ ] review history
-- [ ] module affinity
-- [ ] ownership patterns
-- [ ] commit frequency
-- [ ] language affinity
+- [x] file expertise
+- [x] recent activity
+- [x] review history
+- [x] module affinity
+- [x] ownership patterns
+- [x] commit frequency
+- [x] language affinity
 
 Score:
 
@@ -599,14 +599,14 @@ ReviewerScore =
 
 Tasks:
 
-- [ ] Build repository activity dataset.
-- [ ] Calculate reviewer signals.
-- [ ] Calculate recommendation score.
-- [ ] Rank candidates internally for recommendation generation.
-- [ ] Persist evidence.
-- [ ] Expose supporting signals in dashboard.
-- [ ] Avoid unrelated personal attributes.
-- [ ] Add recommendation tests.
+- [x] Build repository activity dataset.
+- [x] Calculate reviewer signals.
+- [x] Calculate recommendation score.
+- [x] Rank candidates internally for recommendation generation.
+- [x] Persist evidence.
+- [x] Expose supporting signals in dashboard.
+- [x] Avoid unrelated personal attributes.
+- [x] Add recommendation tests.
 
 ### Acceptance
 
@@ -624,13 +624,13 @@ with repository evidence.
 
 ## P1
 
-- [ ] Generate concise PR summary.
-- [ ] Summarize primary risk.
-- [ ] Summarize critical findings.
-- [ ] Identify important changed modules.
-- [ ] Include recommended review focus.
-- [ ] Show AI-assisted nature of the brief.
-- [ ] Validate structured output.
+- [x] Generate concise PR summary.
+- [x] Summarize primary risk.
+- [x] Summarize critical findings.
+- [x] Identify important changed modules.
+- [x] Include recommended review focus.
+- [x] Show AI-assisted nature of the brief.
+- [x] Validate structured output.
 
 ### Acceptance
 
@@ -642,14 +642,14 @@ A reviewer can understand the PR's important risk areas without reading every ra
 
 ## P0
 
-- [ ] Implement GitHub comment endpoint.
-- [ ] Generate concise comment.
-- [ ] Include critical findings.
-- [ ] Include risk score.
-- [ ] Include dashboard link.
-- [ ] Avoid exposing secrets.
-- [ ] Prevent duplicate comments where practical.
-- [ ] Handle GitHub API errors.
+- [x] Implement GitHub comment endpoint.
+- [x] Generate concise comment.
+- [x] Include critical findings.
+- [x] Include risk score.
+- [x] Include dashboard link.
+- [x] Avoid exposing secrets.
+- [x] Prevent duplicate comments where practical.
+- [x] Handle GitHub API errors.
 
 ### Acceptance
 
@@ -661,16 +661,16 @@ A completed analysis can publish an understandable result back to the PR.
 
 ## P2
 
-- [ ] Implement fix-generation endpoint.
-- [ ] Generate explanation.
-- [ ] Generate unified diff/patch.
-- [ ] Generate expected behavior.
-- [ ] Generate potential side effects.
-- [ ] Validate patch syntax.
-- [ ] Store proposed patch.
-- [ ] Mark fix as `PROPOSED`.
-- [ ] Never auto-merge.
-- [ ] Never auto-deploy.
+- [x] Implement fix-generation endpoint.
+- [x] Generate explanation.
+- [x] Generate unified diff/patch.
+- [x] Generate expected behavior.
+- [x] Generate potential side effects.
+- [x] Validate patch syntax.
+- [x] Store proposed patch.
+- [x] Mark fix as `PROPOSED`.
+- [x] Never auto-merge.
+- [x] Never auto-deploy.
 
 ### Acceptance
 
@@ -682,15 +682,15 @@ A generated fix is clearly presented as a proposal requiring validation and huma
 
 ## P2
 
-- [ ] Create ephemeral validation job.
-- [ ] Apply generated patch.
-- [ ] Run tests.
-- [ ] Run lint.
-- [ ] Run security checks.
-- [ ] Run build where applicable.
-- [ ] Capture results.
-- [ ] Persist validation state.
-- [ ] Delete temporary environment.
+- [x] Create ephemeral validation job.
+- [x] Apply generated patch.
+- [x] Run tests.
+- [x] Run lint.
+- [x] Run security checks.
+- [x] Run build where applicable.
+- [x] Capture results.
+- [x] Persist validation state.
+- [x] Delete temporary environment.
 
 Recommended Docker restrictions:
 
@@ -718,61 +718,61 @@ Implement according to `design.md`.
 
 ### App shell
 
-- [ ] Navigation rail.
-- [ ] Mobile navigation.
-- [ ] Page header.
-- [ ] Global command/search where needed.
-- [ ] Authenticated shell.
+- [x] Navigation rail.
+- [x] Mobile navigation.
+- [x] Page header.
+- [x] Global command/search where needed.
+- [x] Authenticated shell.
 
 ### Overview
 
-- [ ] Hero risk statement.
-- [ ] Active risk metric.
-- [ ] PR queue preview.
-- [ ] Risk trend.
-- [ ] Recent analysis.
-- [ ] System status.
+- [x] Hero risk statement.
+- [x] Active risk metric.
+- [x] PR queue preview.
+- [x] Risk trend.
+- [x] Recent analysis.
+- [x] System status.
 
 ### PR queue
 
-- [ ] Editorial PR rows.
-- [ ] Risk score.
-- [ ] Severity counts.
-- [ ] Repository metadata.
-- [ ] Analysis status.
-- [ ] Filters.
+- [x] Editorial PR rows.
+- [x] Risk score.
+- [x] Severity counts.
+- [x] Repository metadata.
+- [x] Analysis status.
+- [x] Filters.
 
 ### PR detail
 
-- [ ] PR header.
-- [ ] Risk score.
-- [ ] Risk breakdown.
-- [ ] Critical findings.
-- [ ] Diff viewer.
-- [ ] AI review brief.
-- [ ] Reviewer recommendation.
-- [ ] Fix proposal.
-- [ ] Validation status.
-- [ ] Audit timeline.
+- [x] PR header.
+- [x] Risk score.
+- [x] Risk breakdown.
+- [x] Critical findings.
+- [x] Diff viewer.
+- [x] AI review brief.
+- [x] Reviewer recommendation.
+- [x] Fix proposal.
+- [x] Validation status.
+- [x] Audit timeline.
 
 ### Risk graph
 
-- [ ] React Flow graph.
-- [ ] PR nodes.
-- [ ] File nodes.
-- [ ] Function/class nodes.
-- [ ] Dependency nodes.
-- [ ] API nodes.
-- [ ] Test nodes.
-- [ ] Finding/risk metadata.
+- [x] React Flow graph.
+- [x] PR nodes.
+- [x] File nodes.
+- [x] Function/class nodes.
+- [x] Dependency nodes.
+- [x] API nodes.
+- [x] Test nodes.
+- [x] Finding/risk metadata.
 
 ### States
 
-- [ ] Loading states.
-- [ ] Empty states.
-- [ ] Error states.
-- [ ] AI unavailable state.
-- [ ] Validation failed state.
+- [x] Loading states.
+- [x] Empty states.
+- [x] Error states.
+- [x] AI unavailable state.
+- [x] Validation failed state.
 
 ---
 
@@ -780,26 +780,26 @@ Implement according to `design.md`.
 
 ## P0
 
-- [ ] Implement dark base palette.
-- [ ] Implement semantic colors.
-- [ ] Implement typography tokens.
-- [ ] Implement spacing scale.
-- [ ] Implement radius scale.
-- [ ] Implement border system.
-- [ ] Implement button variants.
-- [ ] Implement status badges.
-- [ ] Implement risk badges.
-- [ ] Implement severity indicators.
-- [ ] Implement monospace technical labels.
+- [x] Implement dark base palette.
+- [x] Implement semantic colors.
+- [x] Implement typography tokens.
+- [x] Implement spacing scale.
+- [x] Implement radius scale.
+- [x] Implement border system.
+- [x] Implement button variants.
+- [x] Implement status badges.
+- [x] Implement risk badges.
+- [x] Implement severity indicators.
+- [x] Implement monospace technical labels.
 
 ### Motion
 
-- [ ] Page entry transitions.
-- [ ] Risk score animation.
-- [ ] Finding reveal.
-- [ ] Graph transitions.
-- [ ] Hover states.
-- [ ] Reduced-motion fallback.
+- [x] Page entry transitions.
+- [x] Risk score animation.
+- [x] Finding reveal.
+- [x] Graph transitions.
+- [x] Hover states.
+- [x] Reduced-motion fallback.
 
 ### Rule
 
@@ -823,16 +823,16 @@ Organization Admin
 
 Tasks:
 
-- [ ] Supabase Auth integration.
-- [ ] Login flow.
-- [ ] Session handling.
-- [ ] Protected routes.
-- [ ] Role checks.
-- [ ] Repository membership checks.
-- [ ] GitHub installation ownership checks.
-- [ ] RLS policies.
-- [ ] Server-side authorization.
-- [ ] Verify no service-role key reaches browser.
+- [x] Supabase Auth integration.
+- [x] Login flow.
+- [x] Session handling.
+- [x] Protected routes.
+- [x] Role checks.
+- [x] Repository membership checks.
+- [x] GitHub installation ownership checks.
+- [x] RLS policies.
+- [x] Server-side authorization.
+- [x] Verify no service-role key reaches browser.
 
 ### Acceptance
 
@@ -844,28 +844,28 @@ Unauthorized users cannot access repository analysis data.
 
 ## P0
 
-- [ ] Webhook signature verification.
-- [ ] Input validation.
-- [ ] Least-privilege GitHub permissions.
-- [ ] Secure secret storage.
-- [ ] RLS.
-- [ ] Audit logging.
-- [ ] Idempotent event handling.
-- [ ] Rate limiting where practical.
-- [ ] Secret redaction.
-- [ ] Prompt-injection defenses.
-- [ ] Repository-data/system-instruction separation.
-- [ ] Patch validation isolation.
-- [ ] No unrestricted AI tools.
+- [x] Webhook signature verification.
+- [x] Input validation.
+- [x] Least-privilege GitHub permissions.
+- [x] Secure secret storage.
+- [x] RLS.
+- [x] Audit logging.
+- [x] Idempotent event handling.
+- [x] Rate limiting where practical.
+- [x] Secret redaction.
+- [x] Prompt-injection defenses.
+- [x] Repository-data/system-instruction separation.
+- [x] Patch validation isolation.
+- [x] No unrestricted AI tools.
 
 ### Never
 
-- [ ] Do not store secrets in source.
-- [ ] Do not send secrets to frontend.
-- [ ] Do not put secrets in AI prompts unnecessarily.
-- [ ] Do not log repository secrets.
-- [ ] Do not auto-merge generated patches.
-- [ ] Do not auto-deploy generated fixes.
+- [x] Do not store secrets in source.
+- [x] Do not send secrets to frontend.
+- [x] Do not put secrets in AI prompts unnecessarily.
+- [x] Do not log repository secrets.
+- [x] Do not auto-merge generated patches.
+- [x] Do not auto-deploy generated fixes.
 
 ---
 
@@ -903,15 +903,15 @@ GET  /api/team/workload
 
 Implementation tasks:
 
-- [ ] Define request schemas.
-- [ ] Define response schemas.
-- [ ] Validate input.
-- [ ] Authenticate sensitive endpoints.
-- [ ] Protect internal callback endpoints.
-- [ ] Normalize errors.
-- [ ] Add pagination.
-- [ ] Add request correlation IDs.
-- [ ] Add API tests.
+- [x] Define request schemas.
+- [x] Define response schemas.
+- [x] Validate input.
+- [x] Authenticate sensitive endpoints.
+- [x] Protect internal callback endpoints.
+- [x] Normalize errors.
+- [x] Add pagination.
+- [x] Add request correlation IDs.
+- [x] Add API tests.
 
 ---
 
@@ -927,23 +927,23 @@ analysis_run_id
 
 Log events:
 
-- [ ] webhook received
-- [ ] job created
-- [ ] analysis started
-- [ ] analysis completed
-- [ ] AI duration
-- [ ] finding count
-- [ ] risk calculation
-- [ ] fix generation
-- [ ] validation result
-- [ ] API errors
+- [x] webhook received
+- [x] job created
+- [x] analysis started
+- [x] analysis completed
+- [x] AI duration
+- [x] finding count
+- [x] risk calculation
+- [x] fix generation
+- [x] validation result
+- [x] API errors
 
 Do not log:
 
-- [ ] secrets
-- [ ] unnecessary source code
-- [ ] private credentials
-- [ ] raw sensitive prompts
+- [x] secrets
+- [x] unnecessary source code
+- [x] private credentials
+- [x] raw sensitive prompts
 
 ---
 
@@ -953,16 +953,16 @@ Do not log:
 
 Handle:
 
-- [ ] GitHub API failure
-- [ ] duplicate webhook
-- [ ] AI timeout
-- [ ] AI rate limit
-- [ ] worker failure
-- [ ] database failure
-- [ ] invalid AI JSON
-- [ ] invalid patch
-- [ ] test failure
-- [ ] security scan failure
+- [x] GitHub API failure
+- [x] duplicate webhook
+- [x] AI timeout
+- [x] AI rate limit
+- [x] worker failure
+- [x] database failure
+- [x] invalid AI JSON
+- [x] invalid patch
+- [x] test failure
+- [x] security scan failure
 
 For every failure define:
 

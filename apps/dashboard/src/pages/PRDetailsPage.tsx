@@ -6,6 +6,7 @@ import {
   Sparkles,
   UserCheck
 } from "lucide-react";
+import { RiskSurfaceGraph } from "../components/RiskSurfaceGraph";
 import type { Finding, ReviewerRecommendation } from "../types";
 
 const MOCK_FINDINGS: Finding[] = [
@@ -130,6 +131,20 @@ export const PRDetailsPage: React.FC = () => {
 
       {/* Main Grid: Evidence & Findings */}
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+        {/* Risk Surface Dependency & Blast Radius Graph (Phase 14 & 15) */}
+        <div className="mb-8 space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-mono uppercase tracking-wider text-[#a5a5a0] flex items-center space-x-2">
+              <span className="h-2 w-2 rounded-full bg-[#d8ff3e] inline-block" />
+              <span>Interactive Risk Surface & Blast Radius Graph</span>
+            </h2>
+            <span className="text-xs font-mono text-[#686863]">
+              React Flow Engine · AST Node Mapping
+            </span>
+          </div>
+          <RiskSurfaceGraph prNumber={Number(prNumber) || 184} />
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left 2 Cols: Findings & Validation */}
           <div className="lg:col-span-2 space-y-6">
