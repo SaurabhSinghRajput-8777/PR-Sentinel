@@ -1,0 +1,59 @@
+name: PR Sentinel Analysis Worker
+
+on:
+  repository_dispatch:
+    types: [analyze-pr]
+  workflow_dispatch:
+    inputs:
+      job_id:
+        description: 'Specific analysis job ID to execute'
+        required: false
+        type: string
+      repository_id:
+        description: 'Repository ID in PR Sentinel'
+        required: false
+        type: string
+      pr_number:
+        description: 'Pull Request Number'
+        required: false
+        type: string
+
+# Concurrency group per PR / repository to automatically cancel stale analysis
+concurrency:
+  group: analyze-pr-${{ github.event.client_payload.repository_id || inputs.repository_id }}-${{ github.event.client_payload.pr_number || inputs.pr_number }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout PR Sentinel Worker
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Analysis Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests pyjwt supabase pydantic semgrep pytest
+
+      - name: Execute PR Analysis Worker
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          GITHUB_APP_ID: ${{ secrets.GITHUB_APP_ID }}
+          GITHUB_PRIVATE_KEY: ${{ secrets.GITHUB_PRIVATE_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          JOB_ID: ${{ github.event.client_payload.job_id || inputs.job_id }}
+          PR_NUMBER: ${{ github.event.client_payload.pr_number || inputs.pr_number }}
+          REPO_OWNER: ${{ github.event.client_payload.repo_owner }}
+          REPO_NAME: ${{ github.event.client_payload.repo_name }}
+          COMMIT_SHA: ${{ github.event.client_payload.commit_sha }}
+        run: |
+          python worker/analysis/main.py

@@ -1,0 +1,37 @@
+name: PR Sentinel Patch Validation Worker
+
+on:
+  repository_dispatch:
+    types: [validate-fix]
+  workflow_dispatch:
+    inputs:
+      fix_id:
+        description: 'Generated Fix ID to validate'
+        required: true
+        type: string
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout Worker
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: |
+          pip install requests supabase
+
+      - name: Execute Sandboxed Validation
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          FIX_ID: ${{ github.event.client_payload.fix_id || inputs.fix_id }}
+        run: |
+          python worker/validation/validate_patch.py

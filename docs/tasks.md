@@ -312,29 +312,29 @@ Create:
 .github/workflows/validate-fix.yml
 ```
 
-- [ ] Trigger analysis only for supported events.
-- [ ] Receive minimum required secrets.
-- [ ] Retrieve queued analysis job.
-- [ ] Mark job `RUNNING`.
-- [ ] Checkout repository.
-- [ ] Execute analysis.
-- [ ] Persist results.
-- [ ] Call analysis callback.
-- [ ] Mark job `COMPLETED` or `FAILED`.
+- [x] Trigger analysis only for supported events.
+- [x] Receive minimum required secrets.
+- [x] Retrieve queued analysis job.
+- [x] Mark job `RUNNING`.
+- [x] Checkout repository.
+- [x] Execute analysis.
+- [x] Persist results.
+- [x] Call analysis callback.
+- [x] Mark job `COMPLETED` or `FAILED`.
 
 ### Concurrency
 
-- [ ] Limit concurrency per repository.
-- [ ] Cancel stale analysis when a newer commit arrives where appropriate.
-- [ ] Avoid unnecessary workflow executions.
-- [ ] Skip irrelevant file changes where possible.
+- [x] Limit concurrency per repository.
+- [x] Cancel stale analysis when a newer commit arrives where appropriate.
+- [x] Avoid unnecessary workflow executions.
+- [x] Skip irrelevant file changes where possible.
 
 ### Acceptance
 
-- [ ] Webhook → DB job → Actions worker works end-to-end.
-- [ ] Worker failure produces `FAILED`.
-- [ ] Failure reason is visible in dashboard.
-- [ ] Retry can be triggered.
+- [x] Webhook → DB job → Actions worker works end-to-end.
+- [x] Worker failure produces `FAILED`.
+- [x] Failure reason is visible in dashboard.
+- [x] Retry can be triggered.
 
 ---
 
