@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { 
   ArrowUpRight, 
@@ -6,10 +6,12 @@ import {
   Sparkles,
   Layers,
   Search,
-  ChevronRight
+  ChevronRight,
+  RefreshCw
 } from "lucide-react";
 import type { PullRequest } from "../types";
 import { formatRelativeTime } from "../lib/utils";
+import { fetchPullRequests } from "../lib/api";
 
 // Mock data demonstrating the PR Sentinel Canonical Schema
 const MOCK_PULL_REQUESTS: PullRequest[] = [
@@ -95,10 +97,36 @@ const MOCK_PULL_REQUESTS: PullRequest[] = [
 ];
 
 export const QueuePage: React.FC = () => {
+  const [pullRequests, setPullRequests] = useState<PullRequest[]>(MOCK_PULL_REQUESTS);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLive, setIsLive] = useState<boolean>(false);
   const [filterSeverity, setFilterSeverity] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  const filteredPRs = MOCK_PULL_REQUESTS.filter(pr => {
+  const loadPRs = async () => {
+    setIsLoading(true);
+    try {
+      const data = await fetchPullRequests();
+      if (data && data.length > 0) {
+        setPullRequests(data);
+        setIsLive(true);
+      } else {
+        setPullRequests(MOCK_PULL_REQUESTS);
+        setIsLive(false);
+      }
+    } catch {
+      setPullRequests(MOCK_PULL_REQUESTS);
+      setIsLive(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadPRs();
+  }, []);
+
+  const filteredPRs = pullRequests.filter(pr => {
     if (filterSeverity !== "ALL" && pr.risk_level !== filterSeverity) return false;
     if (searchQuery.trim() !== "") {
       const q = searchQuery.toLowerCase();
@@ -187,17 +215,35 @@ export const QueuePage: React.FC = () => {
               <Layers className="h-4 w-4" />
             </div>
             <div>
-              <h2 className="text-sm font-display font-bold uppercase tracking-wider text-[#111111]">
-                Active Triage Queue
-              </h2>
+              <div className="flex items-center space-x-2">
+                <h2 className="text-sm font-display font-bold uppercase tracking-wider text-[#111111]">
+                  Active Triage Queue
+                </h2>
+                {isLive ? (
+                  <span className="inline-flex items-center px-1.5 py-0.5 text-[9px] font-mono bg-emerald-600 text-white font-bold uppercase tracking-wider">
+                    ● LIVE SUPABASE
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center px-1.5 py-0.5 text-[9px] font-mono bg-[#999990] text-white font-semibold uppercase tracking-wider">
+                    DEMO MOCK
+                  </span>
+                )}
+              </div>
               <p className="text-xs font-mono text-[#666660]">
                 {filteredPRs.length} PRs prioritised by risk surface blast radius
               </p>
             </div>
           </div>
 
-          {/* Search & Severity Filters */}
+          {/* Search, Refresh & Severity Filters */}
           <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={loadPRs}
+              title="Refresh queue"
+              className="p-1.5 bg-[#f7f5f0] border border-[#d4d0c7] hover:border-[#111111] text-[#111111] transition-colors"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
+            </button>
             <div className="relative">
               <Search className="h-3.5 w-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#888880]" />
               <input

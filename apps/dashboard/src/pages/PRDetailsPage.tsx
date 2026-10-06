@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { 
   ArrowLeft, 
@@ -10,7 +10,8 @@ import {
   MessageSquareCode
 } from "lucide-react";
 import { RiskSurfaceGraph } from "../components/RiskSurfaceGraph";
-import type { Finding, ReviewerRecommendation } from "../types";
+import type { Finding, ReviewerRecommendation, PullRequest } from "../types";
+import { fetchPRDetails } from "../lib/api";
 
 const MOCK_FINDINGS: Finding[] = [
   {
@@ -89,6 +90,26 @@ export const PRDetailsPage: React.FC = () => {
   const { prNumber } = useParams<{ prNumber: string }>();
   const [activeTab, setActiveTab] = useState<"findings" | "graph">("findings");
   const [approvedFixes, setApprovedFixes] = useState<Record<string, boolean>>({});
+  const [livePr, setLivePr] = useState<PullRequest | null>(null);
+  const [liveFindings, setLiveFindings] = useState<Finding[]>(MOCK_FINDINGS);
+  const [liveReviewers, setLiveReviewers] = useState<ReviewerRecommendation[]>(MOCK_REVIEWERS);
+
+  useEffect(() => {
+    if (!prNumber) return;
+    fetchPRDetails(prNumber)
+      .then(res => {
+        if (res && res.pr) {
+          setLivePr(res.pr);
+          if (res.findings && res.findings.length > 0) {
+            setLiveFindings(res.findings);
+          }
+          if (res.reviewers && res.reviewers.length > 0) {
+            setLiveReviewers(res.reviewers);
+          }
+        }
+      })
+      .catch(err => console.warn("Failed to load PR details:", err));
+  }, [prNumber]);
 
   const toggleApprove = (findingId: string) => {
     setApprovedFixes(prev => ({
@@ -96,6 +117,13 @@ export const PRDetailsPage: React.FC = () => {
       [findingId]: !prev[findingId]
     }));
   };
+
+  const title = livePr?.title || (prNumber === "1" ? "test: sentinel analysis pipeline trigger" : "refactor(auth): migrate token rotation and session caching to async store");
+  const author = livePr?.author_login || (prNumber === "1" ? "SaurabhSinghRajput-8777" : "alexchen");
+  const headBranch = livePr?.head_branch || (prNumber === "1" ? "test/sentinel-check" : "feat/auth-session-cache");
+  const baseBranch = livePr?.base_branch || (prNumber === "1" ? "master" : "main");
+  const riskScore = livePr?.risk_score ?? (prNumber === "1" ? 32 : 84);
+  const riskLevel = livePr?.risk_level || (prNumber === "1" ? "LOW" : "CRITICAL");
 
   return (
     <div className="min-h-screen bg-[#efece6] text-[#111111] pb-24 selection:bg-[#e63920] selection:text-white">
@@ -114,16 +142,21 @@ export const PRDetailsPage: React.FC = () => {
             <div className="max-w-3xl">
               <div className="flex flex-wrap items-center gap-2.5 text-xs font-mono text-[#666660] mb-2">
                 <span className="font-bold text-white bg-[#e63920] px-2 py-0.5">
-                  SURFACE #{prNumber || "184"}
+                  SURFACE #{prNumber || "1"}
                 </span>
                 <span>·</span>
-                <span className="text-[#111111] font-semibold">alexchen / feat/auth-session-cache</span>
+                <span className="text-[#111111] font-semibold">{author} / {headBranch}</span>
                 <span>·</span>
-                <span className="text-[#666660]">TARGET: main</span>
+                <span className="text-[#666660]">TARGET: {baseBranch}</span>
+                {livePr && (
+                  <span className="inline-flex items-center px-1.5 py-0.5 text-[9px] font-mono bg-emerald-600 text-white font-bold uppercase">
+                    ● LIVE
+                  </span>
+                )}
               </div>
 
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display font-bold tracking-tight text-[#111111] leading-tight">
-                refactor(auth): migrate token rotation and session caching to async store
+                {title}
               </h1>
             </div>
 
@@ -134,10 +167,12 @@ export const PRDetailsPage: React.FC = () => {
                   RISK ASSESSMENT
                 </span>
                 <div className="flex items-baseline space-x-2 mt-0.5">
-                  <span className="text-3xl font-mono font-extrabold text-[#e63920]">84</span>
+                  <span className={`text-3xl font-mono font-extrabold ${riskLevel === "CRITICAL" ? "text-[#e63920]" : riskLevel === "HIGH" ? "text-amber-600" : "text-emerald-700"}`}>
+                    {riskScore}
+                  </span>
                   <span className="text-xs font-mono text-[#888880]">/100</span>
-                  <span className="text-xs font-mono font-bold px-2 py-0.5 bg-[#e63920] text-white">
-                    CRITICAL
+                  <span className={`text-xs font-mono font-bold px-2 py-0.5 text-white ${riskLevel === "CRITICAL" ? "bg-[#e63920]" : riskLevel === "HIGH" ? "bg-amber-600" : "bg-emerald-700"}`}>
+                    {riskLevel}
                   </span>
                 </div>
               </div>
@@ -173,7 +208,7 @@ export const PRDetailsPage: React.FC = () => {
                   : "border-transparent text-[#666660] hover:text-[#111111]"
               }`}
             >
-              01 // FINDINGS & EXPLAINABILITY ({MOCK_FINDINGS.length})
+              01 // FINDINGS & EXPLAINABILITY ({liveFindings.length})
             </button>
             <button
               onClick={() => setActiveTab("graph")}
@@ -209,7 +244,7 @@ export const PRDetailsPage: React.FC = () => {
               </div>
 
               <div className="space-y-4">
-                {MOCK_FINDINGS.map((finding) => (
+                {liveFindings.map((finding) => (
                   <div
                     key={finding.id}
                     className="border border-[#d4d0c7] bg-[#f7f5f0] p-6 space-y-5 shadow-sm"
@@ -358,7 +393,7 @@ export const PRDetailsPage: React.FC = () => {
                 </p>
 
                 <div className="space-y-3">
-                  {MOCK_REVIEWERS.map((rev) => (
+                  {liveReviewers.map((rev) => (
                     <div
                       key={rev.id}
                       className="p-3.5 bg-[#efece6] border border-[#d4d0c7] space-y-2"
