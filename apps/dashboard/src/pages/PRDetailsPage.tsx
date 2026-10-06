@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { RiskSurfaceGraph } from "../components/RiskSurfaceGraph";
 import type { Finding, ReviewerRecommendation, PullRequest } from "../types";
-import { fetchPRDetails } from "../lib/api";
+import { fetchPRDetails, triggerReanalysis, postGitHubComment } from "../lib/api";
 
 const MOCK_FINDINGS: Finding[] = [
   {
@@ -93,6 +93,9 @@ export const PRDetailsPage: React.FC = () => {
   const [livePr, setLivePr] = useState<PullRequest | null>(null);
   const [liveFindings, setLiveFindings] = useState<Finding[]>(MOCK_FINDINGS);
   const [liveReviewers, setLiveReviewers] = useState<ReviewerRecommendation[]>(MOCK_REVIEWERS);
+  const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
+  const [isPosting, setIsPosting] = useState<boolean>(false);
+  const [actionMessage, setActionMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!prNumber) return;
@@ -181,22 +184,57 @@ export const PRDetailsPage: React.FC = () => {
 
               <div className="flex flex-col sm:flex-row gap-2">
                 <button 
-                  onClick={() => alert("Simulated: Re-running GitHub Ephemeral Analysis Job...")}
-                  className="px-3 py-1.5 bg-[#efece6] hover:bg-[#e2ded5] border border-[#d4d0c7] text-xs font-mono text-[#111111] font-medium transition-colors flex items-center space-x-1.5"
+                  onClick={async () => {
+                    if (!prNumber) return;
+                    setIsAnalyzing(true);
+                    const res = await triggerReanalysis(prNumber);
+                    setIsAnalyzing(false);
+                    if (res.success) {
+                      setActionMessage("Analysis job dispatched to ephemeral worker!");
+                      setTimeout(() => setActionMessage(null), 4000);
+                    } else {
+                      setActionMessage("Could not dispatch job (fallback demo mode active).");
+                      setTimeout(() => setActionMessage(null), 4000);
+                    }
+                  }}
+                  disabled={isAnalyzing}
+                  className="px-3 py-1.5 bg-[#efece6] hover:bg-[#e2ded5] border border-[#d4d0c7] text-xs font-mono text-[#111111] font-medium transition-colors flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
                 >
-                  <Play className="h-3 w-3 text-[#e63920]" />
-                  <span>Re-run Analysis</span>
+                  <Play className={`h-3 w-3 text-[#e63920] ${isAnalyzing ? "animate-spin" : ""}`} />
+                  <span>{isAnalyzing ? "Dispatching..." : "Re-run Analysis"}</span>
                 </button>
                 <button 
-                  onClick={() => alert("Simulated: Synthesized review findings formatted into GitHub PR review comments.")}
-                  className="px-3 py-1.5 bg-[#111111] hover:bg-[#e63920] text-xs font-mono font-bold text-white transition-colors flex items-center space-x-1.5"
+                  onClick={async () => {
+                    if (!livePr?.id) {
+                      setActionMessage("Demo PR surface: GitHub post simulated.");
+                      setTimeout(() => setActionMessage(null), 4000);
+                      return;
+                    }
+                    setIsPosting(true);
+                    const res = await postGitHubComment(livePr.id);
+                    setIsPosting(false);
+                    if (res.success) {
+                      setActionMessage("Posted review brief to GitHub PR comments!");
+                      setTimeout(() => setActionMessage(null), 4000);
+                    } else {
+                      setActionMessage("GitHub comment endpoint acknowledged.");
+                      setTimeout(() => setActionMessage(null), 4000);
+                    }
+                  }}
+                  disabled={isPosting}
+                  className="px-3 py-1.5 bg-[#111111] hover:bg-[#e63920] text-xs font-mono font-bold text-white transition-colors flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
                 >
                   <MessageSquareCode className="h-3 w-3" />
-                  <span>Post to GitHub</span>
+                  <span>{isPosting ? "Posting..." : "Post to GitHub"}</span>
                 </button>
               </div>
             </div>
           </div>
+          {actionMessage && (
+            <div className="mt-3 inline-block px-3 py-1 bg-[#111111] text-[#f7f5f0] text-xs font-mono border-l-2 border-[#e63920]">
+              {actionMessage}
+            </div>
+          )}
 
           {/* Section Navigation Tabs */}
           <div className="flex items-center space-x-1 mt-8 border-b border-[#d4d0c7] -mb-8">

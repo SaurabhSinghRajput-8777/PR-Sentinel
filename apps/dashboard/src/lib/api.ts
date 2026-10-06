@@ -46,3 +46,68 @@ export async function fetchPRDetails(prIdOrNumber: string | number): Promise<PRD
     return null;
   }
 }
+
+export interface SystemStats {
+  stats: {
+    total_prs: number;
+    total_jobs: number;
+    total_findings: number;
+    total_fixes: number;
+  };
+  recent_prs: Array<{
+    id: string;
+    number: number;
+    title: string;
+    state: string;
+    risk_score: number;
+    risk_level: string;
+    created_at: string;
+    head_branch: string;
+    repositories?: { name: string };
+  }>;
+}
+
+export async function fetchSystemStats(): Promise<SystemStats | null> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/dashboard-api/stats`, {
+      method: "GET",
+      headers,
+    });
+    if (!res.ok) throw new Error(`Failed to fetch stats: ${res.statusText}`);
+    return await res.json();
+  } catch (err) {
+    console.warn("Failed to fetch live system stats:", err);
+    return null;
+  }
+}
+
+export async function triggerReanalysis(prIdOrNumber: string | number): Promise<{ success: boolean; job_id?: string }> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/dashboard-api/prs/${prIdOrNumber}/analyze`, {
+      method: "POST",
+      headers,
+    });
+    if (!res.ok) throw new Error("Failed to trigger re-analysis");
+    const data = await res.json();
+    return { success: true, job_id: data.job_id };
+  } catch (err) {
+    console.warn("Error triggering reanalysis:", err);
+    return { success: false };
+  }
+}
+
+export async function postGitHubComment(pullRequestId: string, commentBody?: string): Promise<{ success: boolean; comment_id?: number }> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/github-comment`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ pull_request_id: pullRequestId, comment_body: commentBody }),
+    });
+    if (!res.ok) throw new Error("Failed to post comment");
+    const data = await res.json();
+    return { success: true, comment_id: data.comment_id };
+  } catch (err) {
+    console.warn("Error posting GitHub comment:", err);
+    return { success: false };
+  }
+}

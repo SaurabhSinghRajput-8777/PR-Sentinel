@@ -20,6 +20,33 @@ serve(async (req: Request) => {
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
+    // 0. GET /stats — Global Telemetry & Command Center overview stats
+    if (req.method === "GET" && path === "stats") {
+      const { count: prCount } = await supabase.from("pull_requests").select("*", { count: "exact", head: true });
+      const { count: jobCount } = await supabase.from("analysis_jobs").select("*", { count: "exact", head: true });
+      const { count: findingCount } = await supabase.from("findings").select("*", { count: "exact", head: true });
+      const { count: fixCount } = await supabase.from("generated_fixes").select("*", { count: "exact", head: true });
+      
+      const { data: recentPRs } = await supabase
+        .from("pull_requests")
+        .select("id, number, title, state, risk_score, risk_level, created_at, head_branch, repositories(name)")
+        .order("created_at", { ascending: false })
+        .limit(10);
+
+      return new Response(JSON.stringify({
+        stats: {
+          total_prs: prCount ?? 0,
+          total_jobs: jobCount ?? 0,
+          total_findings: findingCount ?? 0,
+          total_fixes: fixCount ?? 0,
+        },
+        recent_prs: recentPRs ?? []
+      }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // 1. GET /prs — Queue of pull requests with risk scores
     if (req.method === "GET" && (path === "prs" || path === "")) {
       const status = url.searchParams.get("status") || "open";

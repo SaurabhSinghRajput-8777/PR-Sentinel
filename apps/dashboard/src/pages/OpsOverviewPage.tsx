@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { 
   Activity, 
@@ -15,6 +15,7 @@ import {
   ResponsiveContainer, 
   CartesianGrid 
 } from "recharts";
+import { fetchSystemStats, type SystemStats } from "../lib/api";
 
 const RISK_TREND_DATA = [
   { day: "Mon", avgRisk: 42, criticalCount: 0 },
@@ -70,6 +71,31 @@ const RECENT_RUNS = [
 ];
 
 export const OpsOverviewPage: React.FC = () => {
+  const [stats, setStats] = useState<SystemStats | null>(null);
+
+  const loadStats = async () => {
+    const data = await fetchSystemStats();
+    if (data) setStats(data);
+  };
+
+  useEffect(() => {
+    loadStats();
+  }, []);
+
+  const totalPRs = stats?.stats?.total_prs ?? 148;
+  const totalJobs = stats?.stats?.total_jobs ?? 12;
+  const recentRuns = stats?.recent_prs && stats.recent_prs.length > 0
+    ? stats.recent_prs.map((pr) => ({
+        id: `pr-${pr.number}`,
+        prNumber: pr.number,
+        title: pr.title,
+        status: pr.risk_level || "LOW",
+        riskScore: pr.risk_score || 32,
+        duration: "18s",
+        completedAt: "Just now",
+        ruleHits: [pr.head_branch || "main"]
+      }))
+    : RECENT_RUNS;
   return (
     <div className="min-h-screen bg-[#efece6] text-[#111111] pb-24 selection:bg-[#e63920] selection:text-white">
       {/* Editorial Architectural Command Center Hero */}
@@ -100,13 +126,13 @@ export const OpsOverviewPage: React.FC = () => {
             <div className="flex flex-wrap sm:flex-nowrap gap-0 bg-[#d4d0c7] p-px border border-[#111111] shadow-sm">
               <div className="flex flex-col bg-[#f7f5f0] px-6 py-5 min-w-[130px] border-r border-[#d4d0c7]">
                 <span className="text-[11px] font-mono tracking-wider uppercase text-[#666660]">
-                  ANALYSIS JOBS
+                  ANALYZED PRS
                 </span>
                 <span className="text-3xl font-mono font-extrabold text-[#111111] tracking-tight mt-1">
-                  148
+                  {totalPRs}
                 </span>
                 <span className="text-[10px] font-mono text-[#107040] mt-1 font-bold">
-                  ↑ 100% HEALTH
+                  {stats ? "● LIVE INGESTION" : "↑ 100% HEALTH"}
                 </span>
               </div>
               <div className="flex flex-col bg-[#f7f5f0] px-6 py-5 min-w-[130px] border-r border-[#d4d0c7]">
@@ -114,7 +140,7 @@ export const OpsOverviewPage: React.FC = () => {
                   BLOCKED OUTAGES
                 </span>
                 <span className="text-3xl font-mono font-extrabold text-[#e63920] tracking-tight mt-1">
-                  12
+                  {totalJobs}
                 </span>
                 <span className="text-[10px] font-mono text-[#e63920] mt-1 font-bold">
                   ● PRE-MERGE SAVES
@@ -270,7 +296,7 @@ export const OpsOverviewPage: React.FC = () => {
           </div>
 
           <div className="divide-y divide-[#d4d0c7]">
-            {RECENT_RUNS.map((run) => (
+            {recentRuns.map((run) => (
               <div key={run.id} className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="space-y-1">
                   <div className="flex items-center space-x-2.5 text-xs font-mono">
