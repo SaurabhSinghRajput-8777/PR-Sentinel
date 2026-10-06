@@ -101,7 +101,10 @@ export const QueuePage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isLive, setIsLive] = useState<boolean>(false);
   const [filterSeverity, setFilterSeverity] = useState<string>("ALL");
+  const [filterRepo, setFilterRepo] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
+
+  const uniqueRepos = ["ALL", ...Array.from(new Set(pullRequests.map(pr => pr.repository_id)))];
 
   const loadPRs = async () => {
     setIsLoading(true);
@@ -128,6 +131,7 @@ export const QueuePage: React.FC = () => {
 
   const filteredPRs = pullRequests.filter(pr => {
     if (filterSeverity !== "ALL" && pr.risk_level !== filterSeverity) return false;
+    if (filterRepo !== "ALL" && pr.repository_id !== filterRepo) return false;
     if (searchQuery.trim() !== "") {
       const q = searchQuery.toLowerCase();
       return (
@@ -254,6 +258,18 @@ export const QueuePage: React.FC = () => {
                 className="pl-8 pr-3 py-1.5 bg-[#f7f5f0] border border-[#d4d0c7] text-xs font-mono text-[#111111] placeholder-[#888880] focus:outline-none focus:border-[#111111] w-48 sm:w-64 transition-colors"
               />
             </div>
+
+            <select
+              value={filterRepo}
+              onChange={(e) => setFilterRepo(e.target.value)}
+              className="px-3 py-1.5 bg-[#f7f5f0] border border-[#d4d0c7] text-xs font-mono text-[#111111] focus:outline-none focus:border-[#111111] transition-colors cursor-pointer"
+            >
+              {uniqueRepos.map(repo => (
+                <option key={repo} value={repo}>
+                  {repo === "ALL" ? "ALL REPOS" : repo}
+                </option>
+              ))}
+            </select>
 
             <div className="flex items-center border border-[#d4d0c7] bg-[#f7f5f0] text-xs font-mono">
               {["ALL", "CRITICAL", "HIGH", "LOW"].map((level) => (
