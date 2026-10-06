@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { 
   ArrowUpRight, 
   GitBranch, 
-  Sparkles,
+  Activity,
   Layers,
   Search,
   ChevronRight,
@@ -104,7 +104,14 @@ export const QueuePage: React.FC = () => {
   const [filterRepo, setFilterRepo] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  const uniqueRepos = ["ALL", ...Array.from(new Set(pullRequests.map(pr => pr.repository_id)))];
+  const uniqueRepos = [
+    { id: "ALL", name: "ALL REPOS" },
+    ...Array.from(
+      new Map(
+        pullRequests.map(pr => [pr.repository_id, pr.repositories?.name || pr.repository_id])
+      ).entries()
+    ).map(([id, name]) => ({ id, name }))
+  ];
 
   const loadPRs = async () => {
     setIsLoading(true);
@@ -262,11 +269,11 @@ export const QueuePage: React.FC = () => {
             <select
               value={filterRepo}
               onChange={(e) => setFilterRepo(e.target.value)}
-              className="px-3 py-1.5 bg-[#f7f5f0] border border-[#d4d0c7] text-xs font-mono text-[#111111] focus:outline-none focus:border-[#111111] transition-colors cursor-pointer"
+              className="px-3 py-1.5 bg-[#f7f5f0] border border-[#d4d0c7] text-xs font-mono text-[#111111] focus:outline-none focus:border-[#111111] transition-colors cursor-pointer max-w-[200px] truncate"
             >
               {uniqueRepos.map(repo => (
-                <option key={repo} value={repo}>
-                  {repo === "ALL" ? "ALL REPOS" : repo}
+                <option key={repo.id} value={repo.id}>
+                  {repo.name}
                 </option>
               ))}
             </select>
@@ -360,7 +367,7 @@ export const QueuePage: React.FC = () => {
                     {pr.review_brief && (
                       <div className="border border-[#d4d0c7] bg-[#efece6] p-3.5 text-xs">
                         <div className="flex items-center space-x-2 text-[#111111] font-mono text-[11px] mb-1 font-bold uppercase tracking-wider">
-                          <Sparkles className="h-3 w-3 text-[#e63920]" />
+                          <Activity className="h-3 w-3 text-[#e63920]" />
                           <span>SYNTHESIZED REVIEW BRIEF</span>
                         </div>
                         <p className="text-[#444440] leading-relaxed font-sans">

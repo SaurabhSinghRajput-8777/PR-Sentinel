@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { 
   ArrowLeft, 
   ShieldAlert, 
-  Sparkles,
+  Activity,
   UserCheck,
   Check,
   Play,
@@ -326,7 +326,7 @@ export const PRDetailsPage: React.FC = () => {
                       <div className="border-t border-[#d4d0c7] pt-4">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center space-x-1.5 text-xs font-mono text-[#111111]">
-                            <Sparkles className="h-3.5 w-3.5 text-[#e63920]" />
+                            <Activity className="h-3.5 w-3.5 text-[#e63920]" />
                             <span className="font-bold uppercase tracking-wider">
                               PROPOSED FIX (SANDBOX VALIDATED)
                             </span>
@@ -386,7 +386,7 @@ export const PRDetailsPage: React.FC = () => {
               {/* AI Review Brief */}
               <div className="border border-[#d4d0c7] bg-[#f7f5f0] p-5 space-y-4 shadow-sm">
                 <div className="flex items-center space-x-2">
-                  <Sparkles className="h-4 w-4 text-[#e63920]" />
+                  <Activity className="h-4 w-4 text-[#e63920]" />
                   <h3 className="text-xs font-mono uppercase tracking-wider text-[#111111] font-bold">
                     AI Review Brief
                   </h3>

@@ -95,6 +95,7 @@ export interface PullRequest {
   github_updated_at: string;
   created_at?: string;
   updated_at?: string;
+  repositories?: { name: string; owner: string };
 }
 
 export interface AnalysisJob {
