@@ -92,27 +92,29 @@ export const PRDetailsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"findings" | "graph">("findings");
   const [approvedFixes, setApprovedFixes] = useState<Record<string, boolean>>({});
   const [livePr, setLivePr] = useState<PullRequest | null>(null);
-  const [liveFindings, setLiveFindings] = useState<Finding[]>(MOCK_FINDINGS);
-  const [liveReviewers, setLiveReviewers] = useState<ReviewerRecommendation[]>(MOCK_REVIEWERS);
+  const [liveFindings, setLiveFindings] = useState<Finding[]>([]);
+  const [liveReviewers, setLiveReviewers] = useState<ReviewerRecommendation[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [isPosting, setIsPosting] = useState<boolean>(false);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     if (!prNumber) return;
     fetchPRDetails(prNumber)
       .then(res => {
+        setIsLoading(false);
         if (res && res.pr) {
           setLivePr(res.pr);
-          if (res.findings && res.findings.length > 0) {
+          if (res.findings) {
             setLiveFindings(res.findings);
           }
-          if (res.reviewers && res.reviewers.length > 0) {
+          if (res.reviewers) {
             setLiveReviewers(res.reviewers);
           }
         }
       })
-      .catch(err => console.warn("Failed to load PR details:", err));
+      .catch(err => { console.warn("Failed to load PR details:", err); setIsLoading(false); });
   }, [prNumber]);
 
   const toggleApprove = (findingId: string) => {
