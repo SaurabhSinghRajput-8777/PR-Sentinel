@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { RiskSurfaceGraph } from "../components/RiskSurfaceGraph";
 import type { Finding, ReviewerRecommendation, PullRequest } from "../types";
-import { fetchPRDetails, triggerReanalysis, postGitHubComment } from "../lib/api";
+import { fetchPRDetails, triggerReanalysis, postGitHubComment, approvePatch } from "../lib/api";
 
 const MOCK_FINDINGS: Finding[] = [
   {
@@ -87,6 +87,7 @@ const MOCK_REVIEWERS: ReviewerRecommendation[] = [
 ];
 
 export const PRDetailsPage: React.FC = () => {
+  const [isApproving, setIsApproving] = useState<Record<string, boolean>>({});
   const { prNumber } = useParams<{ prNumber: string }>();
   const [activeTab, setActiveTab] = useState<"findings" | "graph">("findings");
   const [approvedFixes, setApprovedFixes] = useState<Record<string, boolean>>({});

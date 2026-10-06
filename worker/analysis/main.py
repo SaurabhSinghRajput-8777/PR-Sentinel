@@ -11,6 +11,13 @@ import json
 from typing import Dict, Any, Optional
 
 try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
+
+try:
     from supabase import create_client, Client
 except ImportError:
     create_client = None
@@ -92,19 +99,77 @@ class AnalysisWorker:
             # Start timer
             start_time = time.time()
 
-            # Execute pipeline steps (diff extraction, static analysis, risk evaluation)
+            from worker.analysis.ai import get_ai_provider
+            
+            ai_provider = get_ai_provider()
+            context = {
+                "pr_summary": job.get("pull_requests", {}),
+                "context_files": [{"file_path": "divide_error.py", "content": "mock content"}]
+            }
+            
+            # Since we don't have github token easily available here for the public repo, let's just fetch diff via public API
+            owner = job.get("repositories", {}).get("owner", "TheAyushTandon")
+            repo_name = job.get("repositories", {}).get("name", "Innovate-Test-Repo")
+            pr_num = job.get("pull_requests", {}).get("number", 1)
+            
+            import requests
+            # fetch files
+            try:
+                res = requests.get(f"https://api.github.com/repos/{owner}/{repo_name}/pulls/{pr_num}/files")
+                if res.status_code == 200:
+                    context["context_files"] = res.json()
+            except Exception as e:
+                print("Failed to fetch PR files:", e)
+
+            ai_results = ai_provider.analyze_pr(context)
+            
             duration_ms = int((time.time() - start_time) * 1000)
 
             # Record analysis run
+            run_id = None
             if self.supabase and "pull_request_id" in job:
-                self.supabase.table("analysis_runs").insert({
+                run_res = self.supabase.table("analysis_runs").insert({
                     "job_id": current_job_id,
                     "pull_request_id": job["pull_request_id"],
                     "commit_sha": job["commit_sha"],
-                    "risk_score": 10,
-                    "risk_level": "LOW",
+                    "risk_score": 90 if ai_results.get("estimated_complexity") == "HIGH" else 50,
+                    "risk_level": "HIGH" if ai_results.get("estimated_complexity") == "HIGH" else "MEDIUM",
                     "duration_ms": duration_ms,
                 }).execute()
+                
+                if run_res.data:
+                    run_id = run_res.data[0]["id"]
+                    
+                    # Insert findings
+                    findings = ai_results.get("ai_findings", [])
+                    for f in findings:
+                        self.supabase.table("findings").insert({
+                            "analysis_run_id": run_id,
+                            "pull_request_id": job["pull_request_id"],
+                            "severity": f.get("severity", "MEDIUM"),
+                            "category": f.get("category", "BUG"),
+                            "title": f.get("title", "Finding"),
+                            "explanation": f.get("explanation", ""),
+                            "file_path": f.get("file_path", "unknown"),
+                            "line_start": f.get("line_start", 1),
+                            "line_end": f.get("line_end", 1),
+                            "impact": f.get("impact", ""),
+                            "evidence": f.get("evidence", ""),
+                            "proposed_fix": f.get("proposed_fix", ""),
+                            "source": f.get("source", "ai"),
+                            "validation_status": "NONE"
+                        }).execute()
+
+                    # Update pull request with computed risk and review brief
+                    brief = ai_provider.generate_review_brief(context, findings)
+                    computed_risk = 90 if ai_results.get("estimated_complexity") == "HIGH" else 50
+                    computed_level = "CRITICAL" if ai_results.get("estimated_complexity") == "HIGH" else "MEDIUM"
+                    
+                    self.supabase.table("pull_requests").update({
+                        "risk_score": computed_risk,
+                        "risk_level": computed_level,
+                        "review_brief": brief
+                    }).eq("id", job["pull_request_id"]).execute()
 
             self.mark_job_completed(current_job_id)
             print(f"Job {current_job_id} successfully completed in {duration_ms}ms")
@@ -120,6 +185,12 @@ class AnalysisWorker:
 if __name__ == "__main__":
     worker = AnalysisWorker()
     target_job_id = os.environ.get("JOB_ID")
-    success = worker.execute_job(target_job_id)
-    if not success:
-        sys.exit(1)
+    if target_job_id:
+        success = worker.execute_job(target_job_id)
+        if not success:
+            sys.exit(1)
+    else:
+        print("Starting continuous polling...")
+        while True:
+            worker.execute_job()
+            time.sleep(5)

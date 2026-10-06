@@ -144,6 +144,62 @@ serve(async (req: Request) => {
       });
     }
 
+    // 4. POST /prs/:id/findings/:finding_id/approve - Approve a patch
+    const patchMatch = path.match(/^prs\/([^\/]+)\/findings\/([^\/]+)\/approve$/);
+    if (req.method === "POST" && patchMatch) {
+      const prParam = patchMatch[1];
+      const findingId = patchMatch[2];
+      
+      const isNum = /^\d+$/.test(prParam);
+      let prQuery = supabase.from("pull_requests").select("*, repositories(*)").single();
+      if (isNum) {
+        prQuery = prQuery.eq("number", parseInt(prParam, 10));
+      } else {
+        prQuery = prQuery.eq("id", prParam);
+      }
+      const { data: pr, error: prErr } = await prQuery;
+      if (prErr || !pr) throw new Error("PR not found");
+
+      const { data: finding, error: findErr } = await supabase.from("findings").select("*").eq("id", findingId).single();
+      if (findErr || !finding) throw new Error("Finding not found");
+
+      const githubToken = Deno.env.get("GITHUB_TOKEN");
+      let comment_id = null;
+      if (githubToken && pr.repositories?.full_name) {
+        const githubRes = await fetch(`https://api.github.com/repos/${pr.repositories.full_name}/pulls/${pr.number}/comments`, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${githubToken}`,
+            "Accept": "application/vnd.github.v3+json",
+            "Content-Type": "application/json",
+            "User-Agent": "PR-Sentinel"
+          },
+          body: JSON.stringify({
+            body: `**PR Sentinel Patch Suggestion**\n\n${finding.proposed_fix}\n\n*(Note: This is an AI-generated suggestion, please review before committing)*`,
+            commit_id: pr.head_commit_sha,
+            path: finding.file_path,
+            line: finding.line_start || 1,
+            side: "RIGHT"
+          })
+        });
+        
+        if (!githubRes.ok) {
+           const errText = await githubRes.text();
+           console.error("GitHub API Error", errText);
+        } else {
+           const githubData = await githubRes.json();
+           comment_id = githubData.id;
+        }
+      }
+
+      await supabase.from("findings").update({ validation_status: "VALIDATED" }).eq("id", findingId);
+
+      return new Response(JSON.stringify({ status: "patch_approved", comment_id }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     return new Response(JSON.stringify({ error: "Endpoint not found", path }), {
       status: 404,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

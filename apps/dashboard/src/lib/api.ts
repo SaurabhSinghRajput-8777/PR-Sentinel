@@ -111,3 +111,19 @@ export async function postGitHubComment(pullRequestId: string, commentBody?: str
     return { success: false };
   }
 }
+
+export async function approvePatch(prId: string, findingId: string): Promise<{ success: boolean; comment_id?: number }> {
+  try {
+    const res = await fetch(${API_BASE_URL}/dashboard-api/prs//findings//approve, {
+      method: "POST",
+      headers,
+    });
+    if (!res.ok) throw new Error("Failed to post patch suggestion");
+    const data = await res.json();
+    return { success: true, comment_id: data.comment_id };
+  } catch (err) {
+    console.warn("Error posting patch suggestion:", err);
+    return { success: false };
+  }
+}
+

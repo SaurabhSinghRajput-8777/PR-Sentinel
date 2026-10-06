@@ -33,51 +33,49 @@ class MockAIProvider(AIProvider):
         return {
             "ai_findings": [
                 {
-                    "severity": "HIGH",
+                    "severity": "CRITICAL",
                     "category": "BUG",
-                    "title": "Potential Race Condition in Token Refresh",
-                    "explanation": "Concurrent requests exchanging expired JWTs may trigger multiple session invalidations simultaneously.",
-                    "file_path": context.get("context_files", [{}])[0].get("file_path", "unknown.ts"),
-                    "line_start": 45,
-                    "line_end": 58,
-                    "impact": "Legitimate active sessions may be dropped unexpectedly under burst traffic.",
-                    "evidence": "Inferred from async token exchange pattern without distributed lock.",
-                    "proposed_fix": "Add mutex lock on refresh_token_id before rotating credentials.",
-                    "confidence": 0.88,
+                    "title": "Uncaught ZeroDivisionError in calculate_average",
+                    "explanation": "If the `data` list is empty, `len(data)` will be 0. Passing `count=0` to `calculate_average` will trigger a `ZeroDivisionError` because of `total_sum / count`.",
+                    "file_path": "divide_error.py",
+                    "line_start": 3,
+                    "line_end": 3,
+                    "impact": "The application will crash entirely when process_data is called with an empty list.",
+                    "evidence": "Observed len(data) being passed as count to total_sum / count.",
+                    "proposed_fix": "Add a check: `if count == 0: return 0` before the division.",
+                    "confidence": 0.99,
                     "source": "ai",
                     "validation_status": "NONE"
                 }
             ],
-            "estimated_complexity": "MEDIUM",
+            "estimated_complexity": "LOW",
             "model_used": "mock-ai-v1"
         }
 
     def generate_review_brief(self, context: Dict[str, Any], findings: List[Dict[str, Any]]) -> Dict[str, Any]:
         pr = context.get("pr_summary", {})
         return {
-            "summary": f"Review brief for PR #{pr.get('number', 0)} ({pr.get('title', '')}). Bounded blast radius focused on authentication & state management.",
+            "summary": f"Review brief for PR #{pr.get('number', 0)}. Detected critical Python ZeroDivisionError.",
             "key_risks": [
-                "Concurrency in token rotation fallback",
-                "Unbounded loop resilience in session store reconnect"
+                "Uncaught ZeroDivisionError on empty arrays"
             ],
             "testing_recommendations": [
-                "Run chaos monkey connection timeout test on Redis",
-                "Verify backward compatibility with v1 JWT claims"
+                "Add unit tests for empty data scenarios"
             ],
-            "impact_surface": [f["file_path"] for f in context.get("context_files", [])]
+            "impact_surface": ["divide_error.py"]
         }
 
     def generate_fix(self, finding: Dict[str, Any], file_content: str) -> Dict[str, Any]:
         return {
             "file_path": finding.get("file_path", ""),
-            "diff_patch": "--- a/file\n+++ b/file\n@@ -10,3 +10,4 @@\n+// Apply bounded jitter\n+await sleep(boundedDelay);",
-            "explanation": "Wrapped unhandled exception and applied bounded exponential backoff."
+            "diff_patch": "--- a/divide_error.py\n+++ b/divide_error.py\n@@ -2,2 +2,4 @@\n+    if count == 0:\n+        return 0\n     average = total_sum / count",
+            "explanation": "Added a guard clause to prevent ZeroDivisionError."
         }
 
 
 class GeminiAIProvider(AIProvider):
     """Google Gemini API Provider (Free tier)."""
-    def __init__(self, api_key: Optional[str] = None, model: str = "gemini-1.5-flash"):
+    def __init__(self, api_key: Optional[str] = None, model: str = "gemini-flash-latest"):
         self.api_key = api_key or os.environ.get("GEMINI_API_KEY", "")
         self.model = model
         self.endpoint = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent?key={self.api_key}"
