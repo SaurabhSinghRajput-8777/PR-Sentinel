@@ -66,14 +66,24 @@ serve(async (req: Request) => {
     // 2. GET /prs/:id — Detailed PR with findings, brief & recommendations
     const prMatch = path.match(/^prs\/([^\/]+)$/);
     if (req.method === "GET" && prMatch) {
-      const prId = prMatch[1];
-      const { data: pr, error: prErr } = await supabase
-        .from("pull_requests")
-        .select("*, repositories(*)")
-        .or(`id.eq.${prId},number.eq.${isNaN(Number(prId)) ? -1 : Number(prId)}`)
-        .single();
+      const prParam = prMatch[1];
+      const isNum = /^\d+$/.test(prParam);
+      
+      let prQuery = supabase.from("pull_requests").select("*, repositories(*)");
+      if (isNum) {
+        prQuery = prQuery.eq("number", parseInt(prParam, 10));
+      } else {
+        prQuery = prQuery.eq("id", prParam);
+      }
 
-      if (prErr) throw prErr;
+      const { data: pr, error: prErr } = await prQuery.single();
+
+      if (prErr || !pr) {
+        return new Response(JSON.stringify({ error: "PR not found", details: prErr?.message }), {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
 
       // Fetch findings
       const { data: findings } = await supabase
@@ -89,7 +99,7 @@ serve(async (req: Request) => {
         .eq("pull_request_id", pr.id)
         .order("score", { ascending: false });
 
-      return new Response(JSON.stringify({ pr, findings, reviewers }), {
+      return new Response(JSON.stringify({ pr, findings: findings || [], reviewers: reviewers || [] }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -98,12 +108,17 @@ serve(async (req: Request) => {
     // 3. POST /prs/:id/analyze — Trigger on-demand re-analysis
     const analyzeMatch = path.match(/^prs\/([^\/]+)\/analyze$/);
     if (req.method === "POST" && analyzeMatch) {
-      const prId = analyzeMatch[1];
-      const { data: pr } = await supabase
-        .from("pull_requests")
-        .select("id, repository_id, head_commit_sha")
-        .or(`id.eq.${prId},number.eq.${isNaN(Number(prId)) ? -1 : Number(prId)}`)
-        .single();
+      const prParam = analyzeMatch[1];
+      const isNum = /^\d+$/.test(prParam);
+
+      let prQuery = supabase.from("pull_requests").select("id, repository_id, head_commit_sha");
+      if (isNum) {
+        prQuery = prQuery.eq("number", parseInt(prParam, 10));
+      } else {
+        prQuery = prQuery.eq("id", prParam);
+      }
+
+      const { data: pr } = await prQuery.single();
 
       if (!pr) {
         return new Response(JSON.stringify({ error: "PR not found" }), {

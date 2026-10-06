@@ -404,7 +404,9 @@ export const PRDetailsPage: React.FC = () => {
                   </h3>
                 </div>
                 <p className="text-xs text-[#444440] leading-relaxed font-sans">
-                  This PR alters critical session caching boundaries. The primary danger surface is fallback reconnection loops when the Redis cluster is unreachable under high concurrency.
+                  {livePr?.review_brief?.summary || 
+                    "This PR alters critical session caching boundaries. The primary danger surface is fallback reconnection loops when the Redis cluster is unreachable under high concurrency."
+                  }
                 </p>
 
                 <div className="border-t border-[#d4d0c7] pt-3">
@@ -412,8 +414,16 @@ export const PRDetailsPage: React.FC = () => {
                     Recommended Test Strategy:
                   </span>
                   <ul className="text-xs text-[#333330] space-y-1.5 list-disc list-inside font-sans">
-                    <li>Simulate 2s network partition under load</li>
-                    <li>Verify token revocation idempotency</li>
+                    {livePr?.review_brief?.testing_recommendations && livePr.review_brief.testing_recommendations.length > 0 ? (
+                      livePr.review_brief.testing_recommendations.map((rec, i) => (
+                        <li key={i}>{rec}</li>
+                      ))
+                    ) : (
+                      <>
+                        <li>Simulate 2s network partition under load</li>
+                        <li>Verify token revocation idempotency</li>
+                      </>
+                    )}
                   </ul>
                 </div>
               </div>
@@ -485,7 +495,12 @@ export const PRDetailsPage: React.FC = () => {
               </span>
             </div>
 
-            <RiskSurfaceGraph prNumber={Number(prNumber) || 184} />
+            <RiskSurfaceGraph 
+              prNumber={Number(prNumber) || 1} 
+              riskScore={riskScore}
+              riskLevel={riskLevel}
+              findings={liveFindings}
+            />
           </div>
         )}
       </main>
