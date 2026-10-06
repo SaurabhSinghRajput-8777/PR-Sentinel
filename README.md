@@ -1,5 +1,7 @@
 # PR Sentinel
 
+> **Live Deployment:** [https://pr-sentinel-55j.pages.dev/](https://pr-sentinel-55j.pages.dev/)
+
 > **AI Engineering Risk & Review Orchestration Platform**  
 > *“Don’t review every PR. Review the PRs that matter.”*
 
