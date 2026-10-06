@@ -114,7 +114,7 @@ export async function postGitHubComment(pullRequestId: string, commentBody?: str
 
 export async function approvePatch(prId: string, findingId: string): Promise<{ success: boolean; comment_id?: number }> {
   try {
-    const res = await fetch(${API_BASE_URL}/dashboard-api/prs//findings//approve, {
+    const res = await fetch(`${API_BASE_URL}/dashboard-api/prs/${prId}/findings/${findingId}/approve`, {
       method: "POST",
       headers,
     });

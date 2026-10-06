@@ -13,78 +13,7 @@ import { RiskSurfaceGraph } from "../components/RiskSurfaceGraph";
 import type { Finding, ReviewerRecommendation, PullRequest } from "../types";
 import { fetchPRDetails, triggerReanalysis, postGitHubComment, approvePatch } from "../lib/api";
 
-const MOCK_FINDINGS: Finding[] = [
-  {
-    id: "f-1",
-    analysis_run_id: "run-184",
-    pull_request_id: "pr-184",
-    severity: "CRITICAL",
-    category: "BUG",
-    title: "Unbounded reconnection retry loop triggers thread starvation",
-    explanation: "When Redis session store fails to acknowledge ping within 500ms, the reconnect handler initiates exponential retries without max jitter or ceiling backoff.",
-    file_path: "src/auth/session.ts",
-    line_start: 88,
-    line_end: 114,
-    impact: "Can cause complete process lockup and HTTP gateway 504 timeouts under failover.",
-    evidence: "AST pattern match: Async while(true) loop lacks break termination condition on Redis network timeout.",
-    proposed_fix: `// Bounded exponential backoff with jitter
-const delay = Math.min(1000 * Math.pow(2, attempts), 30000) + Math.random() * 500;
-await sleep(delay);`,
-    confidence: 0.96,
-    source: "deterministic",
-    validation_status: "VALIDATED",
-    is_dismissed: false,
-    created_at: new Date().toISOString()
-  },
-  {
-    id: "f-2",
-    analysis_run_id: "run-184",
-    pull_request_id: "pr-184",
-    severity: "HIGH",
-    category: "SECURITY",
-    title: "JWT secret token validation fallback uses weak mock key in non-production environments",
-    explanation: "If process.env.JWT_SECRET is undefined, an unauthenticated developer key is accepted.",
-    file_path: "src/auth/jwt.ts",
-    line_start: 42,
-    line_end: 56,
-    impact: "High risk of security bypass if staging container configuration fails to mount environment secret.",
-    evidence: "Static match: Hardcoded secret fallback pattern verified via Semgrep rule.",
-    proposed_fix: `if (!process.env.JWT_SECRET) {
-  throw new Error("Fatal: JWT_SECRET environment variable must be specified.");
-}`,
-    confidence: 0.99,
-    source: "deterministic",
-    validation_status: "PENDING",
-    is_dismissed: false,
-    created_at: new Date().toISOString()
-  }
-];
 
-const MOCK_REVIEWERS: ReviewerRecommendation[] = [
-  {
-    id: "rev-1",
-    pull_request_id: "pr-184",
-    recommended_login: "marcus-dev",
-    score: 94.2,
-    match_reasons: [
-      "Authored 68% of commits to src/auth/session.ts in past 90 days",
-      "Resolved 4 high-severity PRs touching Redis connection pool",
-      "Currently within healthy review workload quota (1 active PR)"
-    ],
-    is_assigned: true
-  },
-  {
-    id: "rev-2",
-    pull_request_id: "pr-184",
-    recommended_login: "priya-sec",
-    score: 87.5,
-    match_reasons: [
-      "Code owner for src/auth/ security boundary",
-      "Historical review approval rate: 96%"
-    ],
-    is_assigned: false
-  }
-];
 
 export const PRDetailsPage: React.FC = () => {
   const [isApproving, setIsApproving] = useState<Record<string, boolean>>({});
@@ -117,11 +46,26 @@ export const PRDetailsPage: React.FC = () => {
       .catch(err => { console.warn("Failed to load PR details:", err); setIsLoading(false); });
   }, [prNumber]);
 
-  const toggleApprove = (findingId: string) => {
-    setApprovedFixes(prev => ({
-      ...prev,
-      [findingId]: !prev[findingId]
-    }));
+  const toggleApprove = async (findingId: string) => {
+    if (approvedFixes[findingId]) return;
+    setIsApproving(prev => ({ ...prev, [findingId]: true }));
+    if (!livePr?.id) {
+      setTimeout(() => {
+        setApprovedFixes(prev => ({ ...prev, [findingId]: true }));
+        setIsApproving(prev => ({ ...prev, [findingId]: false }));
+      }, 1000);
+      return;
+    }
+    const res = await approvePatch(livePr.id, findingId);
+    setIsApproving(prev => ({ ...prev, [findingId]: false }));
+    if (res.success) {
+      setApprovedFixes(prev => ({ ...prev, [findingId]: true }));
+      setActionMessage("Patch suggestion posted to GitHub!");
+      setTimeout(() => setActionMessage(null), 4000);
+    } else {
+      setActionMessage("Could not post patch to GitHub.");
+      setTimeout(() => setActionMessage(null), 4000);
+    }
   };
 
   const title = livePr?.title || (prNumber === "1" ? "test: sentinel analysis pipeline trigger" : "refactor(auth): migrate token rotation and session caching to async store");
@@ -130,6 +74,17 @@ export const PRDetailsPage: React.FC = () => {
   const baseBranch = livePr?.base_branch || (prNumber === "1" ? "master" : "main");
   const riskScore = livePr?.risk_score ?? (prNumber === "1" ? 32 : 84);
   const riskLevel = livePr?.risk_level || (prNumber === "1" ? "LOW" : "CRITICAL");
+
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-[1400px] mx-auto p-8 font-mono text-[#444] min-h-screen flex items-center justify-center">
+        <div className="text-[#0b6e4f] flex flex-col items-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#0b6e4f] mb-4"></div>
+          <p className="tracking-widest text-sm font-bold uppercase">Loading PR Data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#efece6] text-[#111111] pb-24 selection:bg-[#e63920] selection:text-white">
@@ -369,6 +324,7 @@ export const PRDetailsPage: React.FC = () => {
                           <div className="flex items-center space-x-2">
                             <button
                               onClick={() => toggleApprove(finding.id)}
+                              disabled={isApproving[finding.id]}
                               className={`px-3 py-1.5 text-xs font-mono font-bold transition-all flex items-center space-x-1.5 ${
                                 approvedFixes[finding.id]
                                   ? "bg-[#1b5e20] text-white"
@@ -379,6 +335,11 @@ export const PRDetailsPage: React.FC = () => {
                                 <>
                                   <Check className="h-3.5 w-3.5 stroke-[3]" />
                                   <span>Patch Approved</span>
+                                </>
+                              ) : isApproving[finding.id] ? (
+                                <>
+                                  <div className="animate-spin rounded-full h-3.5 w-3.5 border-t-2 border-b-2 border-white"></div>
+                                  <span>Approving...</span>
                                 </>
                               ) : (
                                 <>
