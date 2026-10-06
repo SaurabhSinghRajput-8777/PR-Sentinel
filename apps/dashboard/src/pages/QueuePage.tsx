@@ -275,8 +275,27 @@ export const QueuePage: React.FC = () => {
 
         {/* PR Queue Cards */}
         <div className="space-y-4">
-          {filteredPRs.map((pr) => {
-            const isCritical = pr.risk_level === "CRITICAL";
+          {isLoading ? (
+            [1, 2, 3].map((i) => (
+              <div key={i} className="border border-[#d4d0c7] bg-[#f7f5f0] p-6 animate-pulse">
+                <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6 pl-2">
+                  <div className="flex-1 space-y-4 pt-2">
+                    <div className="h-4 w-1/2 bg-[#d4d0c7]" />
+                    <div className="h-6 w-3/4 bg-[#d4d0c7]" />
+                    <div className="h-16 w-full bg-[#d4d0c7]" />
+                    <div className="h-4 w-1/3 bg-[#d4d0c7]" />
+                  </div>
+                  <div className="h-20 w-32 bg-[#d4d0c7]" />
+                </div>
+              </div>
+            ))
+          ) : filteredPRs.length === 0 ? (
+            <div className="p-8 text-center border border-[#d4d0c7] bg-[#f7f5f0] text-sm font-mono text-[#666660]">
+              No PRs found matching your filters.
+            </div>
+          ) : (
+            filteredPRs.map((pr) => {
+              const isCritical = pr.risk_level === "CRITICAL";
             const isHigh = pr.risk_level === "HIGH";
 
             return (
@@ -402,7 +421,8 @@ export const QueuePage: React.FC = () => {
                 </div>
               </div>
             );
-          })}
+          })
+          )}
         </div>
       </main>
     </div>

@@ -77,11 +77,35 @@ export const PRDetailsPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="w-full max-w-[1400px] mx-auto p-8 font-mono text-[#444] min-h-screen flex items-center justify-center">
-        <div className="text-[#0b6e4f] flex flex-col items-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#0b6e4f] mb-4"></div>
-          <p className="tracking-widest text-sm font-bold uppercase">Loading PR Data...</p>
-        </div>
+      <div className="min-h-screen bg-[#efece6] text-[#111111] pb-24">
+        <section className="relative border-b border-[#d4d0c7] bg-[#efece6] px-6 sm:px-12 lg:px-20 xl:px-28 py-8 animate-pulse">
+          <div className="h-4 w-48 bg-[#d4d0c7] mb-4" />
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+            <div className="w-full max-w-3xl">
+              <div className="h-5 w-64 bg-[#d4d0c7] mb-2" />
+              <div className="h-10 w-3/4 bg-[#d4d0c7]" />
+            </div>
+            <div className="h-24 w-64 bg-[#d4d0c7]" />
+          </div>
+          <div className="flex space-x-2 mt-8">
+            <div className="h-8 w-48 bg-[#d4d0c7]" />
+            <div className="h-8 w-48 bg-[#d4d0c7]" />
+          </div>
+        </section>
+        <main className="w-full px-6 sm:px-12 lg:px-20 xl:px-28 py-12 animate-pulse">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-4">
+              <div className="h-6 w-1/3 bg-[#d4d0c7] mb-6" />
+              {[1, 2, 3].map(i => (
+                <div key={i} className="h-64 w-full bg-[#d4d0c7] border border-[#d4d0c7]" />
+              ))}
+            </div>
+            <div className="space-y-6">
+              <div className="h-48 w-full bg-[#d4d0c7] border border-[#d4d0c7]" />
+              <div className="h-64 w-full bg-[#d4d0c7] border border-[#d4d0c7]" />
+            </div>
+          </div>
+        </main>
       </div>
     );
   }
