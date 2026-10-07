@@ -39,7 +39,11 @@ export const PRDetailsPage: React.FC = () => {
             setLiveFindings(res.findings);
           }
           if (res.reviewers) {
-            setLiveReviewers(res.reviewers);
+            // Deduplicate reviewers by login
+            const uniqueReviewers = res.reviewers.filter(
+              (rev, index, self) => index === self.findIndex(r => r.recommended_login === rev.recommended_login)
+            );
+            setLiveReviewers(uniqueReviewers);
           }
         }
       })
