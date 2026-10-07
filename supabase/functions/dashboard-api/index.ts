@@ -132,6 +132,7 @@ serve(async (req: Request) => {
         repository_id: pr.repository_id,
         pull_request_id: pr.id,
         commit_sha: pr.head_commit_sha,
+        analysis_version: `re-run-${Date.now()}`,
         status: "QUEUED",
         priority: 5, // Manual trigger priority boost
       }).select("id").single();

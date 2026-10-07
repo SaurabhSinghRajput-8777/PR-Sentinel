@@ -48,30 +48,65 @@ serve(async (req: Request) => {
 
     // 3. Fetch PR files from GitHub
     let files = [];
+    let rateLimitExceeded = false;
+    let rateLimitMessage = "";
+    
     try {
       const owner = pr.repositories?.owner || "TheAyushTandon";
       const repo = pr.repositories?.name || "Innovate-Test-Repo";
-      const ghRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/pulls/${pr.number}/files`);
+      
+      const ghToken = Deno.env.get("GITHUB_TOKEN");
+      const headers: Record<string, string> = {
+        "User-Agent": "PR-Sentinel"
+      };
+      if (ghToken) {
+        headers["Authorization"] = `Bearer ${ghToken}`;
+      }
+      
+      const ghRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/pulls/${pr.number}/files`, { headers });
       if (ghRes.ok) {
         files = await ghRes.json();
+      } else {
+        rateLimitExceeded = true;
+        rateLimitMessage = await ghRes.text();
+        console.error("Failed to fetch PR files from GitHub:", rateLimitMessage);
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error("Failed to fetch PR files from GitHub", e);
+      rateLimitExceeded = true;
+      rateLimitMessage = e.message;
     }
 
     // 4. Call Gemini API
     const geminiKey = Deno.env.get("GEMINI_API_KEY");
     let aiFindings = [];
     let estimatedComplexity = "MEDIUM";
+    let riskScore = 50;
+    let riskLevel = "MEDIUM";
     
     const startTime = Date.now();
 
-    if (geminiKey) {
-      const systemInstruction = `You are PR Sentinel, an engineering risk intelligence analyzer. Analyze the provided PR diff context and output ONLY valid JSON matching: {"ai_findings": [{"severity": "CRITICAL"|"HIGH"|"MEDIUM"|"LOW", "category": "BUG"|"SECURITY"|"PERF"|"STYLE", "title": "...", "explanation": "...", "file_path": "...", "line_start": 1, "line_end": 1, "impact": "...", "proposed_fix": "..."}], "estimated_complexity": "LOW"|"MEDIUM"|"HIGH"}`;
+    let geminiRawText = "";
+    if (rateLimitExceeded) {
+       // Mock fallback so the UI isn't empty, explaining the exact problem
+       aiFindings = [{
+         severity: "CRITICAL",
+         category: "BUG",
+         title: "GitHub API Rate Limit Exceeded",
+         explanation: `The GitHub API rejected the request to fetch PR files. This usually happens when making unauthenticated requests. You must add a GITHUB_TOKEN to your Supabase Edge Function Secrets. Response: ${rateLimitMessage.substring(0, 100)}...`,
+         file_path: "github_api",
+         line_start: 1,
+         line_end: 1,
+         proposed_fix: "Run: supabase secrets set GITHUB_TOKEN=ghp_your_token_here",
+         impact: "Analysis failed because no files could be read."
+       }];
+    } else if (geminiKey) {
+      const systemInstruction = `You are PR Sentinel, an engineering risk intelligence analyzer. Analyze the provided PR diff context and output ONLY valid JSON matching: {"ai_findings": [{"severity": "CRITICAL"|"HIGH"|"MEDIUM"|"LOW", "category": "BUG"|"SECURITY"|"PERF"|"STYLE", "title": "...", "explanation": "...", "file_path": "...", "line_start": 1, "line_end": 1, "impact": "...", "proposed_fix": "..."}], "risk_score": <number 1-100>, "risk_level": "LOW"|"MEDIUM"|"HIGH"|"CRITICAL"}. The risk_score should be a precise integer from 1-100 based on the severity and number of vulnerabilities (e.g. a single CRITICAL bug should instantly push the score above 85, multiple HIGH bugs above 70).`;
+      const strippedPr = { title: pr.title, body: pr.body };
+      const strippedFiles = (files || []).map((f: any) => ({ filename: f.filename, patch: f.patch }));
+      const prompt = `PR Metadata: ${JSON.stringify(strippedPr)}\nChanged Files: ${JSON.stringify(strippedFiles)}`;
       
-      const prompt = `PR Metadata: ${JSON.stringify(pr)}\nChanged Files: ${JSON.stringify(files)}`;
-      
-      const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+      const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent?key=${geminiKey}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -83,17 +118,39 @@ serve(async (req: Request) => {
       if (geminiRes.ok) {
         const geminiData = await geminiRes.json();
         const text = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
+        geminiRawText = text || "";
         if (text) {
           try {
             const parsed = JSON.parse(text);
             aiFindings = parsed.ai_findings || [];
-            estimatedComplexity = parsed.estimated_complexity || "MEDIUM";
+            
+            // Allow AI to set the score, but fallback if it didn't
+            if (typeof parsed.risk_score === "number") {
+              riskScore = parsed.risk_score;
+              riskLevel = parsed.risk_level || "MEDIUM";
+            } else {
+              estimatedComplexity = parsed.estimated_complexity || "MEDIUM";
+            }
           } catch (e) {
             console.error("Failed to parse Gemini JSON output", e);
+            geminiRawText = "Parse Error: " + e.message + "\nText was: " + text;
           }
         }
       } else {
-        console.error("Gemini API error", await geminiRes.text());
+        const errText = await geminiRes.text();
+        console.error("Gemini API error", errText);
+        geminiRawText = "Gemini API Error: " + errText;
+        aiFindings = [{
+         severity: "CRITICAL",
+         category: "BUG",
+         title: "Gemini API Error",
+         explanation: `The Gemini API rejected the request. Response: ${errText.substring(0, 150)}...`,
+         file_path: "gemini_api",
+         line_start: 1,
+         line_end: 1,
+         proposed_fix: "Check GEMINI_API_KEY and model name in Edge Function.",
+         impact: "Analysis failed because Gemini could not be reached."
+       }];
       }
     } else {
        // Mock fallback
@@ -111,9 +168,33 @@ serve(async (req: Request) => {
     }
 
     const durationMs = Date.now() - startTime;
-    const riskScore = estimatedComplexity === "HIGH" ? 90 : 50;
-    const riskLevel = estimatedComplexity === "HIGH" ? "CRITICAL" : "MEDIUM";
+    // If riskScore wasn't set directly by the AI JSON, calculate a fallback
+    if (riskScore === 50 && aiFindings.length > 0) {
+       // Simple fallback calculation
+       let calculatedScore = 0;
+       aiFindings.forEach((f: any) => {
+         if (f.severity === "CRITICAL") calculatedScore += 30;
+         else if (f.severity === "HIGH") calculatedScore += 20;
+         else if (f.severity === "MEDIUM") calculatedScore += 10;
+         else if (f.severity === "LOW") calculatedScore += 5;
+       });
+       riskScore = Math.min(100, Math.max(0, calculatedScore));
+       if (riskScore >= 85) riskLevel = "CRITICAL";
+       else if (riskScore >= 70) riskLevel = "HIGH";
+       else if (riskScore >= 40) riskLevel = "MEDIUM";
+       else riskLevel = "LOW";
+    } else if (riskScore === 50 && estimatedComplexity === "HIGH") {
+       riskScore = 90;
+       riskLevel = "CRITICAL";
+    }
 
+    let rawText = "";
+    if (geminiKey && !rateLimitExceeded) {
+        rawText = geminiRawText;
+    } else {
+        rawText = "Mock or Error: " + JSON.stringify(aiFindings);
+    }
+    
     // 5. Insert Analysis Run
     const { data: run } = await supabase.from("analysis_runs").insert({
       job_id: jobId,
@@ -121,7 +202,8 @@ serve(async (req: Request) => {
       commit_sha: pr.head_commit_sha,
       risk_score: riskScore,
       risk_level: riskLevel,
-      duration_ms: durationMs
+      duration_ms: durationMs,
+      raw_ai_output: rawText
     }).select("id").single();
 
     // 6. Insert Findings
@@ -136,6 +218,7 @@ serve(async (req: Request) => {
         file_path: f.file_path || "unknown",
         line_start: f.line_start || 1,
         line_end: f.line_end || 1,
+        evidence: f.explanation || "No evidence provided",
         impact: f.impact || "",
         proposed_fix: f.proposed_fix || "",
         source: "ai",
