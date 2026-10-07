@@ -286,13 +286,6 @@ export const PRDetailsPage: React.FC = () => {
                           {finding.title}
                         </h3>
                       </div>
-
-                      <div className="text-right">
-                        <span className="text-[10px] font-mono tracking-widest text-[#666660] block font-semibold">CONFIDENCE</span>
-                        <div className="text-sm font-mono font-extrabold text-[#e63920]">
-                          {Math.round(finding.confidence * 100)}%
-                        </div>
-                      </div>
                     </div>
 
                     {/* 5-Part Explainability Sections - Architectural Drafting Surface */}
