@@ -92,7 +92,17 @@ try:
 except Exception as e:
     print("Findings insert error:", e)
 
-# 3. Insert Reviewer Recommendation
+# 3. Clean and Insert Reviewer Recommendation
+try:
+    req_del = urllib.request.Request(
+        f"{sb_url}/rest/v1/reviewer_recommendations?pull_request_id=eq.{pr_id}",
+        headers=headers,
+        method="DELETE"
+    )
+    urllib.request.urlopen(req_del)
+except Exception as e:
+    pass
+
 reviewers = [
     {
         "pull_request_id": pr_id,

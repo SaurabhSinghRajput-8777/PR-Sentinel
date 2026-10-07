@@ -39,7 +39,11 @@ export const PRDetailsPage: React.FC = () => {
             setLiveFindings(res.findings);
           }
           if (res.reviewers) {
-            setLiveReviewers(res.reviewers);
+            // Deduplicate reviewers by login
+            const uniqueReviewers = res.reviewers.filter(
+              (rev, index, self) => index === self.findIndex(r => r.recommended_login === rev.recommended_login)
+            );
+            setLiveReviewers(uniqueReviewers);
           }
         }
       })
@@ -285,13 +289,6 @@ export const PRDetailsPage: React.FC = () => {
                         <h3 className="text-base font-display font-bold text-[#111111]">
                           {finding.title}
                         </h3>
-                      </div>
-
-                      <div className="text-right">
-                        <span className="text-[10px] font-mono tracking-widest text-[#666660] block font-semibold">CONFIDENCE</span>
-                        <div className="text-sm font-mono font-extrabold text-[#e63920]">
-                          {Math.round(finding.confidence * 100)}%
-                        </div>
                       </div>
                     </div>
 
