@@ -171,6 +171,33 @@ class AnalysisWorker:
                         "review_brief": brief
                     }).eq("id", job["pull_request_id"]).execute()
 
+                    # Calculate and Insert Reviewer Recommendations
+                    repo_id = job.get("repository_id")
+                    pr_author = job.get("pull_requests", {}).get("author_login", "")
+                    if repo_id and pr_author:
+                        from worker.analysis.reviewer import ReviewerRecommendationEngine
+                        changed_files = [f.get("filename", f.get("file_path")) for f in context.get("context_files", []) if f.get("filename") or f.get("file_path")]
+                        sig_res = self.supabase.table("developer_signals").select("*").eq("repository_id", repo_id).execute()
+                        signals = sig_res.data if sig_res else []
+                        
+                        recommendations = ReviewerRecommendationEngine.recommend_reviewers(
+                            changed_files=changed_files,
+                            developer_signals=signals,
+                            pr_author=pr_author,
+                            max_recommendations=3
+                        )
+                        
+                        # Remove old recommendations if any
+                        self.supabase.table("reviewer_recommendations").delete().eq("pull_request_id", job["pull_request_id"]).execute()
+                        
+                        for rec in recommendations:
+                            self.supabase.table("reviewer_recommendations").insert({
+                                "pull_request_id": job["pull_request_id"],
+                                "recommended_login": rec["recommended_login"],
+                                "score": rec["score"],
+                                "match_reasons": rec["match_reasons"]
+                            }).execute()
+
             self.mark_job_completed(current_job_id)
             print(f"Job {current_job_id} successfully completed in {duration_ms}ms")
             return True
